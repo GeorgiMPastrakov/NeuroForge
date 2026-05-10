@@ -33,3 +33,9 @@ add_executable(neuroforge_optim test_optim.cpp)
 target_link_libraries(neuroforge_optim PRIVATE neuroforge)
 
 add_test(NAME neuroforge_optim COMMAND neuroforge_optim)
+
+add_executable(neuroforge_training test_training.cpp)
+
+target_link_libraries(neuroforge_training PRIVATE neuroforge)
+
+add_test(NAME neuroforge_training COMMAND neuroforge_training)
