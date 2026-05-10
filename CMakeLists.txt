@@ -3,6 +3,15 @@ cmake_minimum_required(VERSION 3.20)
 project(NeuroForge VERSION 0.1.0 LANGUAGES CXX)
 
 add_library(neuroforge STATIC
+    src/losses/MSELoss.cpp
+    src/nn/Linear.cpp
+    src/nn/Module.cpp
+    src/nn/Parameter.cpp
+    src/nn/ReLU.cpp
+    src/nn/Sequential.cpp
+    src/nn/Sigmoid.cpp
+    src/nn/Tanh.cpp
+    src/optim/SGD.cpp
     src/core/Random.cpp
     src/core/Shape.cpp
     src/core/Tensor.cpp
