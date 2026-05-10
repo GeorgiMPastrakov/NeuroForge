@@ -22,6 +22,7 @@ add_library(neuroforge STATIC
     src/data/DataLoader.cpp
     src/data/Dataset.cpp
     src/data/TrainTestSplitter.cpp
+    src/metrics/Metrics.cpp
 )
 
 target_compile_features(neuroforge PUBLIC cxx_std_20)

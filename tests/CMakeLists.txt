@@ -51,3 +51,9 @@ add_executable(neuroforge_data test_data.cpp)
 target_link_libraries(neuroforge_data PRIVATE neuroforge)
 
 add_test(NAME neuroforge_data COMMAND neuroforge_data)
+
+add_executable(neuroforge_metrics test_metrics.cpp)
+
+target_link_libraries(neuroforge_metrics PRIVATE neuroforge)
+
+add_test(NAME neuroforge_metrics COMMAND neuroforge_metrics)
