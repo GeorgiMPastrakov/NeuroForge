@@ -11,6 +11,17 @@ Tensor::Tensor(std::vector<double> data, Shape shape)
     }
 }
 
+Tensor Tensor::fromVector(std::initializer_list<std::initializer_list<double>> values) {
+    std::vector<std::vector<double>> rows;
+    rows.reserve(values.size());
+
+    for (const auto& row : values) {
+        rows.emplace_back(row);
+    }
+
+    return fromVector(rows);
+}
+
 Tensor Tensor::fromVector(const std::vector<double>& values) {
     return Tensor(values, Shape({values.size()}));
 }
@@ -153,6 +164,35 @@ Tensor Tensor::multiply(double scalar) const {
     }
 
     return Tensor(std::move(result), shape_);
+}
+
+Tensor Tensor::matmul(const Tensor& other) const {
+    if (rank() != 2 || other.rank() != 2) {
+        throw std::invalid_argument("MatMul requires rank 2 tensors.");
+    }
+
+    if (shape_.cols() != other.shape_.rows()) {
+        throw std::invalid_argument("MatMul shape mismatch: left shape " + shape_.toString() + " cannot multiply right shape " + other.shape_.toString() + ".");
+    }
+
+    const size_t rows = shape_.rows();
+    const size_t inner = shape_.cols();
+    const size_t cols = other.shape_.cols();
+    std::vector<double> result(rows * cols, 0.0);
+
+    for (size_t row = 0; row < rows; ++row) {
+        for (size_t col = 0; col < cols; ++col) {
+            double total = 0.0;
+
+            for (size_t index = 0; index < inner; ++index) {
+                total += at(row, index) * other.at(index, col);
+            }
+
+            result[row * cols + col] = total;
+        }
+    }
+
+    return Tensor(std::move(result), Shape({rows, cols}));
 }
 
 Tensor Tensor::transpose() const {

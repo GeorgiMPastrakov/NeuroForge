@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <stdexcept>
+#include <string>
 
 using namespace neuroforge;
 
@@ -17,6 +18,18 @@ void expectThrows(Function function) {
     }
 
     assert(thrown);
+}
+
+template <typename Exception, typename Function>
+std::string thrownMessage(Function function) {
+    try {
+        function();
+    } catch (const Exception& exception) {
+        return exception.what();
+    }
+
+    assert(false);
+    return "";
 }
 
 bool near(double left, double right) {
@@ -109,9 +122,41 @@ int main() {
     assert(left.sum().item() == 10.0);
     assert(near(left.mean().item(), 2.5));
 
+    Tensor matmul_2x2 = left.matmul(right);
+    assert(matmul_2x2.shape() == Shape({2, 2}));
+    assert(matmul_2x2.at(0, 0) == 19.0);
+    assert(matmul_2x2.at(0, 1) == 22.0);
+    assert(matmul_2x2.at(1, 0) == 43.0);
+    assert(matmul_2x2.at(1, 1) == 50.0);
+
+    Tensor matmul_2x3_3x1 = Tensor::fromVector({
+        {1.0, 2.0, 3.0},
+        {4.0, 5.0, 6.0}
+    }).matmul(Tensor::fromVector({
+        {7.0},
+        {8.0},
+        {9.0}
+    }));
+    assert(matmul_2x3_3x1.shape() == Shape({2, 1}));
+    assert(matmul_2x3_3x1.at(0, 0) == 50.0);
+    assert(matmul_2x3_3x1.at(1, 0) == 122.0);
+
+    std::string matmul_error = thrownMessage<std::invalid_argument>([] {
+        Tensor::fromVector({
+            {1.0, 2.0}
+        }).matmul(Tensor::fromVector({
+            {1.0},
+            {2.0},
+            {3.0}
+        }));
+    });
+    assert(matmul_error.find("[1, 2]") != std::string::npos);
+    assert(matmul_error.find("[3, 1]") != std::string::npos);
+
     expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).add(Tensor::fromVector({1.0, 2.0})); });
     expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).subtract(Tensor::fromVector({1.0, 2.0})); });
     expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).multiply(Tensor::fromVector({1.0, 2.0})); });
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).matmul(Tensor::fromVector({1.0})); });
     expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).transpose(); });
     expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0, 2.0}).item(); });
 

@@ -3,6 +3,7 @@
 #include "neuroforge/core/Shape.hpp"
 
 #include <cstddef>
+#include <initializer_list>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@ class Tensor {
 public:
     Tensor(std::vector<double> data, Shape shape);
 
+    static Tensor fromVector(std::initializer_list<std::initializer_list<double>> values);
     static Tensor fromVector(const std::vector<double>& values);
     static Tensor fromVector(const std::vector<std::vector<double>>& values);
     static Tensor zeros(const Shape& shape);
@@ -34,6 +36,7 @@ public:
     Tensor subtract(const Tensor& other) const;
     Tensor multiply(const Tensor& other) const;
     Tensor multiply(double scalar) const;
+    Tensor matmul(const Tensor& other) const;
     Tensor transpose() const;
     Tensor sum() const;
     Tensor mean() const;
