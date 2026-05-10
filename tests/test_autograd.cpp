@@ -1,7 +1,11 @@
 #include "neuroforge/autograd/Value.hpp"
 #include "neuroforge/core/Tensor.hpp"
 #include "neuroforge/losses/MSELoss.hpp"
+#include "neuroforge/nn/Linear.hpp"
 #include "neuroforge/nn/Parameter.hpp"
+#include "neuroforge/optim/SGD.hpp"
+#include "neuroforge/training/Trainer.hpp"
+#include "neuroforge/training/TrainingConfig.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -163,6 +167,40 @@ int main() {
     parameter.zero_grad();
     assert(near(parameter.grad().at(0), 0.0));
     assert(near(parameter.data().grad()[0], 0.0));
+
+    Linear autograd_linear(1, 1);
+    autograd_linear.weights().data().at(0, 0) = 1.0;
+    autograd_linear.bias().data().at(0, 0) = 0.0;
+    autograd_linear.enableAutograd();
+    Tensor linear_input = Tensor::fromVector({
+        {1.0},
+        {2.0}
+    });
+    Tensor linear_target = Tensor::fromVector({
+        {2.0},
+        {4.0}
+    });
+    MSELoss linear_loss;
+    Tensor linear_prediction = autograd_linear.forward(linear_input);
+    Tensor linear_loss_value = linear_loss.forward(linear_prediction, linear_target);
+    linear_loss_value.backward();
+    autograd_linear.syncAutogradGradients();
+    assert(near(autograd_linear.weights().grad().at(0, 0), -5.0));
+    assert(near(autograd_linear.bias().grad().at(0, 0), -3.0));
+
+    Linear regression(1, 1);
+    regression.weights().data().at(0, 0) = 0.0;
+    regression.bias().data().at(0, 0) = 0.0;
+    MSELoss regression_loss;
+    SGD regression_optimizer(regression.parameters(), 0.05);
+    Trainer regression_trainer(regression, regression_loss, regression_optimizer);
+    double regression_before = regression_trainer.evaluateLoss(linear_input, linear_target);
+    TrainingConfig regression_config;
+    regression_config.epochs = 100;
+    TrainingHistory regression_history = regression_trainer.fitAutograd(linear_input, linear_target, regression_config);
+    double regression_after = regression_trainer.evaluateLoss(linear_input, linear_target);
+    assert(regression_history.size() == 100);
+    assert(regression_after < regression_before);
 
     Value p(4.0, true);
     Value q(2.0, true);

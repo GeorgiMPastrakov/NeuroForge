@@ -14,6 +14,7 @@ public:
     Trainer(Module& model, LossFunction& loss, Optimizer& optimizer);
 
     TrainingHistory fit(const Tensor& input, const Tensor& target, const TrainingConfig& config);
+    TrainingHistory fitAutograd(const Tensor& input, const Tensor& target, const TrainingConfig& config);
     double evaluateLoss(const Tensor& input, const Tensor& target);
 
 private:
