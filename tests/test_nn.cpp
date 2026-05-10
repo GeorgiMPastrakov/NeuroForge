@@ -1,7 +1,9 @@
 #include "neuroforge/nn/Module.hpp"
 #include "neuroforge/nn/Parameter.hpp"
+#include "neuroforge/nn/Linear.hpp"
 
 #include <cassert>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -22,6 +24,23 @@ public:
     }
 };
 
+template <typename Exception, typename Function>
+void expectThrows(Function function) {
+    bool thrown = false;
+
+    try {
+        function();
+    } catch (const Exception&) {
+        thrown = true;
+    }
+
+    assert(thrown);
+}
+
+bool near(double left, double right) {
+    return std::fabs(left - right) < 1e-9;
+}
+
 int main() {
     Parameter parameter(Tensor::fromVector({1.0, 2.0}), "weights");
     assert(parameter.name() == "weights");
@@ -40,6 +59,68 @@ int main() {
     assert(module.parameters().empty());
     module.zero_grad();
     assert(module.name() == "EmptyModule");
+
+    Linear linear(2, 3);
+    assert(linear.inFeatures() == 2);
+    assert(linear.outFeatures() == 3);
+    assert(linear.parameterCount() == 9);
+    assert(linear.parameters().size() == 2);
+    assert(linear.weights().data().shape() == Shape({2, 3}));
+    assert(linear.bias().data().shape() == Shape({1, 3}));
+    assert(linear.name() == "Linear(2 -> 3)");
+
+    linear.weights().data().at(0, 0) = 1.0;
+    linear.weights().data().at(0, 1) = 2.0;
+    linear.weights().data().at(0, 2) = 3.0;
+    linear.weights().data().at(1, 0) = 4.0;
+    linear.weights().data().at(1, 1) = 5.0;
+    linear.weights().data().at(1, 2) = 6.0;
+    linear.bias().data().at(0, 0) = 0.5;
+    linear.bias().data().at(0, 1) = 1.0;
+    linear.bias().data().at(0, 2) = -1.0;
+
+    Tensor input = Tensor::fromVector({
+        {1.0, 2.0},
+        {3.0, 4.0}
+    });
+    Tensor output = linear.forward(input);
+    assert(output.shape() == Shape({2, 3}));
+    assert(near(output.at(0, 0), 9.5));
+    assert(near(output.at(0, 1), 13.0));
+    assert(near(output.at(0, 2), 14.0));
+    assert(near(output.at(1, 0), 19.5));
+    assert(near(output.at(1, 1), 27.0));
+    assert(near(output.at(1, 2), 32.0));
+
+    Tensor grad_output = Tensor::fromVector({
+        {1.0, 2.0, 3.0},
+        {4.0, 5.0, 6.0}
+    });
+    Tensor input_grad = linear.backward(grad_output);
+    assert(input_grad.shape() == Shape({2, 2}));
+    assert(near(input_grad.at(0, 0), 14.0));
+    assert(near(input_grad.at(0, 1), 32.0));
+    assert(near(input_grad.at(1, 0), 32.0));
+    assert(near(input_grad.at(1, 1), 77.0));
+    assert(near(linear.weights().grad().at(0, 0), 13.0));
+    assert(near(linear.weights().grad().at(0, 1), 17.0));
+    assert(near(linear.weights().grad().at(0, 2), 21.0));
+    assert(near(linear.weights().grad().at(1, 0), 18.0));
+    assert(near(linear.weights().grad().at(1, 1), 24.0));
+    assert(near(linear.weights().grad().at(1, 2), 30.0));
+    assert(near(linear.bias().grad().at(0, 0), 5.0));
+    assert(near(linear.bias().grad().at(0, 1), 7.0));
+    assert(near(linear.bias().grad().at(0, 2), 9.0));
+
+    linear.zero_grad();
+    assert(near(linear.weights().grad().at(0, 0), 0.0));
+    assert(near(linear.bias().grad().at(0, 0), 0.0));
+
+    expectThrows<std::invalid_argument>([] { Linear(0, 1); });
+    expectThrows<std::invalid_argument>([] { Linear(1, 0); });
+    expectThrows<std::invalid_argument>([] { Linear(2, 1).forward(Tensor::fromVector({1.0, 2.0})); });
+    expectThrows<std::invalid_argument>([] { Linear(2, 1).forward(Tensor::fromVector({{1.0, 2.0, 3.0}})); });
+    expectThrows<std::invalid_argument>([] { Linear(2, 1).backward(Tensor::fromVector({{1.0}})); });
 
     return 0;
 }
