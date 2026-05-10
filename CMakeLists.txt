@@ -11,6 +11,7 @@ add_library(neuroforge STATIC
     src/nn/Sequential.cpp
     src/nn/Sigmoid.cpp
     src/nn/Tanh.cpp
+    src/optim/SGD.cpp
     src/core/Random.cpp
     src/core/Shape.cpp
     src/core/Tensor.cpp
