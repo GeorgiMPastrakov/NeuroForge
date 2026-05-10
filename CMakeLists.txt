@@ -7,6 +7,7 @@ add_library(neuroforge STATIC
     src/nn/Module.cpp
     src/nn/Parameter.cpp
     src/nn/ReLU.cpp
+    src/nn/Sequential.cpp
     src/nn/Sigmoid.cpp
     src/nn/Tanh.cpp
     src/core/Random.cpp

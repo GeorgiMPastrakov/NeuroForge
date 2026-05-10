@@ -2,11 +2,13 @@
 #include "neuroforge/nn/Parameter.hpp"
 #include "neuroforge/nn/Linear.hpp"
 #include "neuroforge/nn/ReLU.hpp"
+#include "neuroforge/nn/Sequential.hpp"
 #include "neuroforge/nn/Sigmoid.hpp"
 #include "neuroforge/nn/Tanh.hpp"
 
 #include <cassert>
 #include <cmath>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -25,6 +27,30 @@ public:
     std::string name() const override {
         return "EmptyModule";
     }
+};
+
+class OrderModule : public Module {
+public:
+    OrderModule(int value, std::vector<int>& order)
+        : value_(value), order_(order) {
+    }
+
+    Tensor forward(const Tensor& input) override {
+        return input;
+    }
+
+    Tensor backward(const Tensor& grad_output) override {
+        order_.push_back(value_);
+        return grad_output;
+    }
+
+    std::string name() const override {
+        return "OrderModule";
+    }
+
+private:
+    int value_;
+    std::vector<int>& order_;
 };
 
 template <typename Exception, typename Function>
@@ -163,6 +189,44 @@ int main() {
         ReLU relu;
         relu.forward(Tensor::fromVector({1.0}));
         relu.backward(Tensor::fromVector({1.0, 2.0}));
+    });
+
+    Sequential sequential;
+    sequential.add(std::make_shared<Linear>(2, 4));
+    sequential.add(std::make_shared<ReLU>());
+    sequential.add(std::make_shared<Linear>(4, 1));
+    sequential.add(std::make_shared<Sigmoid>());
+    assert(sequential.name() == "Sequential");
+    assert(sequential.size() == 4);
+    assert(sequential.parameters().size() == 4);
+    Tensor sequential_output = sequential.forward(Tensor::fromVector({
+        {0.0, 0.0},
+        {0.0, 1.0},
+        {1.0, 0.0},
+        {1.0, 1.0}
+    }));
+    assert(sequential_output.shape() == Shape({4, 1}));
+    std::string summary = sequential.summary();
+    assert(summary.find("Linear(2 -> 4)") != std::string::npos);
+    assert(summary.find("ReLU()") != std::string::npos);
+    assert(summary.find("Sigmoid()") != std::string::npos);
+    assert(summary.find("Total parameters: 17") != std::string::npos);
+
+    std::vector<int> order;
+    Sequential ordered;
+    ordered.add(std::make_shared<OrderModule>(1, order));
+    ordered.add(std::make_shared<OrderModule>(2, order));
+    ordered.add(std::make_shared<OrderModule>(3, order));
+    ordered.forward(Tensor::fromVector({1.0}));
+    ordered.backward(Tensor::fromVector({1.0}));
+    assert(order.size() == 3);
+    assert(order[0] == 3);
+    assert(order[1] == 2);
+    assert(order[2] == 1);
+
+    expectThrows<std::invalid_argument>([] {
+        Sequential invalid;
+        invalid.add(nullptr);
     });
 
     return 0;
