@@ -2,21 +2,23 @@ include(FetchContent)
 
 find_package(OpenGL REQUIRED)
 
+set(NEUROFORGE_GIT_BASE "https:/")
+
 FetchContent_Declare(
     glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_REPOSITORY ${NEUROFORGE_GIT_BASE}/github.com/glfw/glfw.git
     GIT_TAG 3.4
 )
 
 FetchContent_Declare(
     imgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_REPOSITORY ${NEUROFORGE_GIT_BASE}/github.com/ocornut/imgui.git
     GIT_TAG v1.92.7
 )
 
 FetchContent_Declare(
     implot
-    GIT_REPOSITORY https://github.com/epezent/implot.git
+    GIT_REPOSITORY ${NEUROFORGE_GIT_BASE}/github.com/epezent/implot.git
     GIT_TAG v1.0
 )
 
