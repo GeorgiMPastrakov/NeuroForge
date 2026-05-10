@@ -13,6 +13,8 @@ add_library(neuroforge STATIC
     src/nn/Sigmoid.cpp
     src/nn/Tanh.cpp
     src/optim/SGD.cpp
+    src/serialization/ModelLoader.cpp
+    src/serialization/ModelSaver.cpp
     src/training/Trainer.cpp
     src/training/TrainingHistory.cpp
     src/core/Random.cpp

@@ -18,6 +18,7 @@ public:
     std::string name() const override;
     std::string summary() const;
     size_t size() const;
+    const std::vector<std::shared_ptr<Module>>& layers() const;
 
 private:
     std::vector<std::shared_ptr<Module>> modules_;
