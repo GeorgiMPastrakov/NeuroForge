@@ -6,7 +6,7 @@ The goal is to build tensors, matrix operations, neural network layers, loss fun
 
 ## Current Status
 
-Phase 1 skeleton is implemented.
+Phase 2 Math Core is implemented.
 
 Implemented:
 
@@ -14,11 +14,20 @@ Implemented:
 - public umbrella header
 - smoke test
 - planned module folder layout
+- `Shape`
+- `Tensor`
+- tensor indexing
+- tensor factories
+- element-wise tensor operations
+- transpose
+- matrix multiplication
+- sum and mean
+- ReLU, sigmoid, and tanh
+- deterministic random initialization
+- core math tests
 
 Not implemented yet:
 
-- Tensor
-- Shape
 - neural network layers
 - loss functions
 - optimizers
@@ -42,18 +51,41 @@ ctest --test-dir build
 #include "neuroforge/neuroforge.hpp"
 ```
 
+## Example
+
+```cpp
+#include "neuroforge/neuroforge.hpp"
+
+using namespace neuroforge;
+
+int main() {
+    Tensor a = Tensor::fromVector({
+        {1.0, 2.0},
+        {3.0, 4.0}
+    });
+
+    Tensor b = Tensor::fromVector({
+        {5.0, 6.0},
+        {7.0, 8.0}
+    });
+
+    Tensor c = a.matmul(b);
+
+    return c.at(0, 0) == 19.0 ? 0 : 1;
+}
+```
+
 ## Roadmap
 
-The next phase is Math Core:
+The next phase is Neural Network, Loss, and Optimizer:
 
-- `Shape`
-- `Tensor`
-- indexing
-- element-wise operations
-- transpose
-- matrix multiplication
-- deterministic random initialization
-- core math tests
+- `Parameter`
+- `Module`
+- `Linear`
+- `ReLU`, `Sigmoid`, and `Tanh` modules
+- `Sequential`
+- `MSELoss`
+- `SGD`
 
 Planning docs live in `docs/planning/`.
 
