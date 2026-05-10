@@ -6,7 +6,7 @@ The goal is to build tensors, matrix operations, neural network layers, loss fun
 
 ## Current Status
 
-Phase 3 Neural Network, Loss, and Optimizer is implemented.
+Phase 4 Training and XOR is implemented.
 
 Implemented:
 
@@ -32,10 +32,14 @@ Implemented:
 - `Sequential`
 - `MSELoss`
 - `SGD`
+- `TrainingConfig`
+- `TrainingHistory`
+- `Trainer`
+- XOR training example
+- deterministic training behavior tests
 
 Not implemented yet:
 
-- training loop
 - autograd
 - data loading
 - serialization
@@ -47,6 +51,12 @@ Not implemented yet:
 cmake -S . -B build
 cmake --build build
 ctest --test-dir build
+```
+
+Run the XOR demo:
+
+```bash
+./build/examples/neuroforge_xor
 ```
 
 ## Public Include
@@ -84,13 +94,13 @@ int main() {
 
 ## Roadmap
 
-The next phase is Training and XOR:
+The next phase is Autograd:
 
-- `TrainingConfig`
-- `TrainingHistory`
-- `Trainer`
-- XOR example
-- XOR loss decrease test
+- scalar `Value`
+- computation graph
+- tensor gradient storage
+- supported operation gradients
+- `loss.backward()` path
 
 Planning docs live in `docs/planning/`.
 
