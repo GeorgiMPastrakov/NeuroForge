@@ -2,14 +2,30 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <unordered_set>
+#include <utility>
 
 namespace neuroforge {
 
-Tensor::Tensor(std::vector<double> data, Shape shape)
-    : data_(std::move(data)), shape_(std::move(shape)) {
-    if (data_.size() != shape_.size()) {
-        throw std::invalid_argument("Tensor data size does not match shape " + shape_.toString() + ".");
+Tensor::Node::Node(std::vector<double> data_value, Shape shape_value, bool requires_grad_value)
+    : data(std::move(data_value)),
+      shape(std::move(shape_value)),
+      grad(data.size(), 0.0),
+      backward_grad(data.size(), 0.0),
+      requires_grad(requires_grad_value) {
+}
+
+Tensor::Tensor(std::vector<double> data, Shape shape, bool requires_grad)
+    : node_(nullptr) {
+    if (data.size() != shape.size()) {
+        throw std::invalid_argument("Tensor data size does not match shape " + shape.toString() + ".");
     }
+
+    node_ = std::make_shared<Node>(std::move(data), std::move(shape), requires_grad);
+}
+
+Tensor::Tensor(std::shared_ptr<Node> node)
+    : node_(std::move(node)) {
 }
 
 Tensor Tensor::fromVector(std::initializer_list<std::initializer_list<double>> values) {
@@ -66,23 +82,23 @@ Tensor Tensor::full(const Shape& shape, double value) {
 }
 
 const Shape& Tensor::shape() const {
-    return shape_;
+    return node_->shape;
 }
 
 size_t Tensor::rank() const {
-    return shape_.rank();
+    return node_->shape.rank();
 }
 
 size_t Tensor::size() const {
-    return data_.size();
+    return node_->data.size();
 }
 
 const std::vector<double>& Tensor::data() const {
-    return data_;
+    return node_->data;
 }
 
 std::vector<double>& Tensor::data() {
-    return data_;
+    return node_->data;
 }
 
 double Tensor::at(size_t index) const {
@@ -94,7 +110,7 @@ double Tensor::at(size_t index) const {
         throw std::out_of_range("Tensor index out of range.");
     }
 
-    return data_[index];
+    return node_->data[index];
 }
 
 double& Tensor::at(size_t index) {
@@ -106,15 +122,15 @@ double& Tensor::at(size_t index) {
         throw std::out_of_range("Tensor index out of range.");
     }
 
-    return data_[index];
+    return node_->data[index];
 }
 
 double Tensor::at(size_t row, size_t col) const {
-    return data_[flatIndex(row, col)];
+    return node_->data[flatIndex(row, col)];
 }
 
 double& Tensor::at(size_t row, size_t col) {
-    return data_[flatIndex(row, col)];
+    return node_->data[flatIndex(row, col)];
 }
 
 Tensor Tensor::add(const Tensor& other) const {
@@ -124,10 +140,10 @@ Tensor Tensor::add(const Tensor& other) const {
     result.reserve(size());
 
     for (size_t index = 0; index < size(); ++index) {
-        result.push_back(data_[index] + other.data_[index]);
+        result.push_back(node_->data[index] + other.node_->data[index]);
     }
 
-    return Tensor(std::move(result), shape_);
+    return Tensor(std::move(result), node_->shape);
 }
 
 Tensor Tensor::subtract(const Tensor& other) const {
@@ -137,10 +153,10 @@ Tensor Tensor::subtract(const Tensor& other) const {
     result.reserve(size());
 
     for (size_t index = 0; index < size(); ++index) {
-        result.push_back(data_[index] - other.data_[index]);
+        result.push_back(node_->data[index] - other.node_->data[index]);
     }
 
-    return Tensor(std::move(result), shape_);
+    return Tensor(std::move(result), node_->shape);
 }
 
 Tensor Tensor::multiply(const Tensor& other) const {
@@ -150,21 +166,21 @@ Tensor Tensor::multiply(const Tensor& other) const {
     result.reserve(size());
 
     for (size_t index = 0; index < size(); ++index) {
-        result.push_back(data_[index] * other.data_[index]);
+        result.push_back(node_->data[index] * other.node_->data[index]);
     }
 
-    return Tensor(std::move(result), shape_);
+    return Tensor(std::move(result), node_->shape);
 }
 
 Tensor Tensor::multiply(double scalar) const {
     std::vector<double> result;
     result.reserve(size());
 
-    for (double value : data_) {
+    for (double value : node_->data) {
         result.push_back(value * scalar);
     }
 
-    return Tensor(std::move(result), shape_);
+    return Tensor(std::move(result), node_->shape);
 }
 
 Tensor Tensor::matmul(const Tensor& other) const {
@@ -172,13 +188,13 @@ Tensor Tensor::matmul(const Tensor& other) const {
         throw std::invalid_argument("MatMul requires rank 2 tensors.");
     }
 
-    if (shape_.cols() != other.shape_.rows()) {
-        throw std::invalid_argument("MatMul shape mismatch: left shape " + shape_.toString() + " cannot multiply right shape " + other.shape_.toString() + ".");
+    if (node_->shape.cols() != other.node_->shape.rows()) {
+        throw std::invalid_argument("MatMul shape mismatch: left shape " + node_->shape.toString() + " cannot multiply right shape " + other.node_->shape.toString() + ".");
     }
 
-    const size_t rows = shape_.rows();
-    const size_t inner = shape_.cols();
-    const size_t cols = other.shape_.cols();
+    const size_t rows = node_->shape.rows();
+    const size_t inner = node_->shape.cols();
+    const size_t cols = other.node_->shape.cols();
     std::vector<double> result(rows * cols, 0.0);
 
     for (size_t row = 0; row < rows; ++row) {
@@ -203,52 +219,52 @@ Tensor Tensor::transpose() const {
 
     std::vector<double> result(size());
 
-    for (size_t row = 0; row < shape_.rows(); ++row) {
-        for (size_t col = 0; col < shape_.cols(); ++col) {
-            result[col * shape_.rows() + row] = at(row, col);
+    for (size_t row = 0; row < node_->shape.rows(); ++row) {
+        for (size_t col = 0; col < node_->shape.cols(); ++col) {
+            result[col * node_->shape.rows() + row] = at(row, col);
         }
     }
 
-    return Tensor(std::move(result), Shape({shape_.cols(), shape_.rows()}));
+    return Tensor(std::move(result), Shape({node_->shape.cols(), node_->shape.rows()}));
 }
 
 Tensor Tensor::relu() const {
     std::vector<double> result;
     result.reserve(size());
 
-    for (double value : data_) {
+    for (double value : node_->data) {
         result.push_back(value > 0.0 ? value : 0.0);
     }
 
-    return Tensor(std::move(result), shape_);
+    return Tensor(std::move(result), node_->shape);
 }
 
 Tensor Tensor::sigmoid() const {
     std::vector<double> result;
     result.reserve(size());
 
-    for (double value : data_) {
+    for (double value : node_->data) {
         result.push_back(1.0 / (1.0 + std::exp(-value)));
     }
 
-    return Tensor(std::move(result), shape_);
+    return Tensor(std::move(result), node_->shape);
 }
 
 Tensor Tensor::tanh() const {
     std::vector<double> result;
     result.reserve(size());
 
-    for (double value : data_) {
+    for (double value : node_->data) {
         result.push_back(std::tanh(value));
     }
 
-    return Tensor(std::move(result), shape_);
+    return Tensor(std::move(result), node_->shape);
 }
 
 Tensor Tensor::sum() const {
     double total = 0.0;
 
-    for (double value : data_) {
+    for (double value : node_->data) {
         total += value;
     }
 
@@ -264,7 +280,71 @@ double Tensor::item() const {
         throw std::invalid_argument("Tensor item requires exactly one element.");
     }
 
-    return data_[0];
+    return node_->data[0];
+}
+
+bool Tensor::requiresGrad() const {
+    return node_->requires_grad;
+}
+
+void Tensor::setRequiresGrad(bool requires_grad) {
+    node_->requires_grad = requires_grad;
+}
+
+const std::vector<double>& Tensor::grad() const {
+    return node_->grad;
+}
+
+std::vector<double>& Tensor::grad() {
+    return node_->grad;
+}
+
+void Tensor::zeroGrad() {
+    node_->grad.assign(size(), 0.0);
+    node_->backward_grad.assign(size(), 0.0);
+}
+
+void Tensor::backward() {
+    if (size() != 1) {
+        throw std::invalid_argument("Tensor backward requires a scalar tensor.");
+    }
+
+    std::unordered_set<Node*> visited;
+    std::vector<std::shared_ptr<Node>> order;
+
+    auto build = [&](const std::shared_ptr<Node>& start, auto&& build_ref) -> void {
+        if (visited.count(start.get()) > 0) {
+            return;
+        }
+
+        visited.insert(start.get());
+
+        for (const auto& parent : start->parents) {
+            build_ref(parent, build_ref);
+        }
+
+        order.push_back(start);
+    };
+
+    build(node_, build);
+
+    for (const auto& node : order) {
+        node->backward_grad.assign(node->data.size(), 0.0);
+    }
+
+    node_->backward_grad[0] = 1.0;
+
+    for (auto iterator = order.rbegin(); iterator != order.rend(); ++iterator) {
+        if ((*iterator)->backward) {
+            (*iterator)->backward();
+        }
+    }
+
+    for (const auto& node : order) {
+        for (size_t index = 0; index < node->grad.size(); ++index) {
+            node->grad[index] += node->backward_grad[index];
+        }
+    }
 }
 
 size_t Tensor::flatIndex(size_t row, size_t col) const {
@@ -272,16 +352,16 @@ size_t Tensor::flatIndex(size_t row, size_t col) const {
         throw std::invalid_argument("Tensor 2D indexing requires rank 2 tensor.");
     }
 
-    if (row >= shape_.rows() || col >= shape_.cols()) {
+    if (row >= node_->shape.rows() || col >= node_->shape.cols()) {
         throw std::out_of_range("Tensor index out of range.");
     }
 
-    return row * shape_.cols() + col;
+    return row * node_->shape.cols() + col;
 }
 
 void Tensor::requireSameShape(const Tensor& other, const std::string& operation) const {
-    if (shape_ != other.shape_) {
-        throw std::invalid_argument(operation + " shape mismatch: left shape " + shape_.toString() + " does not match right shape " + other.shape_.toString() + ".");
+    if (node_->shape != other.node_->shape) {
+        throw std::invalid_argument(operation + " shape mismatch: left shape " + node_->shape.toString() + " does not match right shape " + other.node_->shape.toString() + ".");
     }
 }
 

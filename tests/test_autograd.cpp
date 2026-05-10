@@ -1,4 +1,5 @@
 #include "neuroforge/autograd/Value.hpp"
+#include "neuroforge/core/Tensor.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -37,8 +38,37 @@ int main() {
     Value y = x * x + x;
     y.backward();
     assert(near(x.grad(), 7.0));
+    y.backward();
+    assert(near(x.grad(), 14.0));
     x.zeroGrad();
     assert(near(x.grad(), 0.0));
+    y.backward();
+    assert(near(x.grad(), 7.0));
+
+    Tensor scalar(std::vector<double>{2.0}, Shape({1}), true);
+    assert(scalar.requiresGrad());
+    assert(scalar.grad().size() == 1);
+    assert(near(scalar.grad()[0], 0.0));
+    scalar.backward();
+    assert(near(scalar.grad()[0], 1.0));
+    scalar.backward();
+    assert(near(scalar.grad()[0], 2.0));
+    scalar.zeroGrad();
+    assert(near(scalar.grad()[0], 0.0));
+
+    Tensor metadata = Tensor::fromVector({1.0, 2.0});
+    assert(!metadata.requiresGrad());
+    metadata.setRequiresGrad(true);
+    assert(metadata.requiresGrad());
+    assert(metadata.grad().size() == metadata.size());
+    metadata.grad()[0] = 3.0;
+    metadata.zeroGrad();
+    assert(near(metadata.grad()[0], 0.0));
+
+    expectThrows<std::invalid_argument>([] {
+        Tensor vector = Tensor::fromVector({1.0, 2.0});
+        vector.backward();
+    });
 
     Value p(4.0, true);
     Value q(2.0, true);

@@ -12,6 +12,7 @@ namespace neuroforge {
 struct Value::Node {
     double data = 0.0;
     double grad = 0.0;
+    double backward_grad = 0.0;
     bool requires_grad = false;
     std::vector<std::shared_ptr<Node>> parents;
     std::function<void()> backward;
@@ -73,6 +74,7 @@ bool Value::requiresGrad() const {
 
 void Value::zeroGrad() {
     node_->grad = 0.0;
+    node_->backward_grad = 0.0;
 }
 
 void Value::backward() {
@@ -85,14 +87,20 @@ void Value::backward() {
     buildTopo(node_, visited, order);
 
     for (const auto& node : order) {
-        node->grad = 0.0;
+        node->backward_grad = 0.0;
     }
 
-    node_->grad = 1.0;
+    node_->backward_grad = 1.0;
 
     for (auto iterator = order.rbegin(); iterator != order.rend(); ++iterator) {
         if ((*iterator)->backward) {
             (*iterator)->backward();
+        }
+    }
+
+    for (const auto& node : order) {
+        if (node->requires_grad) {
+            node->grad += node->backward_grad;
         }
     }
 }
@@ -102,7 +110,7 @@ Value Value::pow(double exponent) const {
     auto parent = node_;
     return makeValue(std::pow(data(), exponent), requires_grad, {parent}, [parent, exponent](const std::shared_ptr<Node>& current) {
         if (parent->requires_grad) {
-            parent->grad += current->grad * exponent * std::pow(parent->data, exponent - 1.0);
+            parent->backward_grad += current->backward_grad * exponent * std::pow(parent->data, exponent - 1.0);
         }
     });
 }
@@ -112,7 +120,7 @@ Value Value::relu() const {
     auto parent = node_;
     return makeValue(data() > 0.0 ? data() : 0.0, requires_grad, {parent}, [parent](const std::shared_ptr<Node>& current) {
         if (parent->requires_grad) {
-            parent->grad += parent->data > 0.0 ? current->grad : 0.0;
+            parent->backward_grad += parent->data > 0.0 ? current->backward_grad : 0.0;
         }
     });
 }
@@ -123,7 +131,7 @@ Value Value::sigmoid() const {
     auto parent = node_;
     return makeValue(output, requires_grad, {parent}, [parent, output](const std::shared_ptr<Node>& current) {
         if (parent->requires_grad) {
-            parent->grad += current->grad * output * (1.0 - output);
+            parent->backward_grad += current->backward_grad * output * (1.0 - output);
         }
     });
 }
@@ -134,7 +142,7 @@ Value Value::tanh() const {
     auto parent = node_;
     return makeValue(output, requires_grad, {parent}, [parent, output](const std::shared_ptr<Node>& current) {
         if (parent->requires_grad) {
-            parent->grad += current->grad * (1.0 - output * output);
+            parent->backward_grad += current->backward_grad * (1.0 - output * output);
         }
     });
 }
@@ -145,11 +153,11 @@ Value operator+(const Value& left, const Value& right) {
     auto right_node = right.node_;
     return makeValue(left.data() + right.data(), requires_grad, {left_node, right_node}, [left_node, right_node](const std::shared_ptr<Value::Node>& current) {
         if (left_node->requires_grad) {
-            left_node->grad += current->grad;
+            left_node->backward_grad += current->backward_grad;
         }
 
         if (right_node->requires_grad) {
-            right_node->grad += current->grad;
+            right_node->backward_grad += current->backward_grad;
         }
     });
 }
@@ -160,11 +168,11 @@ Value operator-(const Value& left, const Value& right) {
     auto right_node = right.node_;
     return makeValue(left.data() - right.data(), requires_grad, {left_node, right_node}, [left_node, right_node](const std::shared_ptr<Value::Node>& current) {
         if (left_node->requires_grad) {
-            left_node->grad += current->grad;
+            left_node->backward_grad += current->backward_grad;
         }
 
         if (right_node->requires_grad) {
-            right_node->grad -= current->grad;
+            right_node->backward_grad -= current->backward_grad;
         }
     });
 }
@@ -175,11 +183,11 @@ Value operator*(const Value& left, const Value& right) {
     auto right_node = right.node_;
     return makeValue(left.data() * right.data(), requires_grad, {left_node, right_node}, [left_node, right_node](const std::shared_ptr<Value::Node>& current) {
         if (left_node->requires_grad) {
-            left_node->grad += current->grad * right_node->data;
+            left_node->backward_grad += current->backward_grad * right_node->data;
         }
 
         if (right_node->requires_grad) {
-            right_node->grad += current->grad * left_node->data;
+            right_node->backward_grad += current->backward_grad * left_node->data;
         }
     });
 }
@@ -194,11 +202,11 @@ Value operator/(const Value& left, const Value& right) {
     auto right_node = right.node_;
     return makeValue(left.data() / right.data(), requires_grad, {left_node, right_node}, [left_node, right_node](const std::shared_ptr<Value::Node>& current) {
         if (left_node->requires_grad) {
-            left_node->grad += current->grad / right_node->data;
+            left_node->backward_grad += current->backward_grad / right_node->data;
         }
 
         if (right_node->requires_grad) {
-            right_node->grad -= current->grad * left_node->data / (right_node->data * right_node->data);
+            right_node->backward_grad -= current->backward_grad * left_node->data / (right_node->data * right_node->data);
         }
     });
 }
