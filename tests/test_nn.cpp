@@ -1,6 +1,9 @@
 #include "neuroforge/nn/Module.hpp"
 #include "neuroforge/nn/Parameter.hpp"
 #include "neuroforge/nn/Linear.hpp"
+#include "neuroforge/nn/ReLU.hpp"
+#include "neuroforge/nn/Sigmoid.hpp"
+#include "neuroforge/nn/Tanh.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -121,6 +124,46 @@ int main() {
     expectThrows<std::invalid_argument>([] { Linear(2, 1).forward(Tensor::fromVector({1.0, 2.0})); });
     expectThrows<std::invalid_argument>([] { Linear(2, 1).forward(Tensor::fromVector({{1.0, 2.0, 3.0}})); });
     expectThrows<std::invalid_argument>([] { Linear(2, 1).backward(Tensor::fromVector({{1.0}})); });
+
+    Tensor activation_input = Tensor::fromVector({-1.0, 0.0, 1.0});
+    Tensor activation_grad = Tensor::fromVector({2.0, 3.0, 4.0});
+
+    ReLU relu_module;
+    Tensor relu_output = relu_module.forward(activation_input);
+    assert(relu_module.name() == "ReLU()");
+    assert(relu_module.parameters().empty());
+    assert(relu_output.at(0) == 0.0);
+    assert(relu_output.at(1) == 0.0);
+    assert(relu_output.at(2) == 1.0);
+    Tensor relu_grad = relu_module.backward(activation_grad);
+    assert(relu_grad.at(0) == 0.0);
+    assert(relu_grad.at(1) == 0.0);
+    assert(relu_grad.at(2) == 4.0);
+
+    Sigmoid sigmoid_module;
+    Tensor sigmoid_output = sigmoid_module.forward(activation_input);
+    assert(sigmoid_module.name() == "Sigmoid()");
+    assert(sigmoid_module.parameters().empty());
+    assert(near(sigmoid_output.at(1), 0.5));
+    Tensor sigmoid_grad = sigmoid_module.backward(activation_grad);
+    assert(near(sigmoid_grad.at(1), 0.75));
+
+    Tanh tanh_module;
+    Tensor tanh_output = tanh_module.forward(activation_input);
+    assert(tanh_module.name() == "Tanh()");
+    assert(tanh_module.parameters().empty());
+    assert(near(tanh_output.at(1), 0.0));
+    Tensor tanh_grad = tanh_module.backward(activation_grad);
+    assert(near(tanh_grad.at(1), 3.0));
+
+    expectThrows<std::invalid_argument>([] { ReLU().backward(Tensor::fromVector({1.0})); });
+    expectThrows<std::invalid_argument>([] { Sigmoid().backward(Tensor::fromVector({1.0})); });
+    expectThrows<std::invalid_argument>([] { Tanh().backward(Tensor::fromVector({1.0})); });
+    expectThrows<std::invalid_argument>([] {
+        ReLU relu;
+        relu.forward(Tensor::fromVector({1.0}));
+        relu.backward(Tensor::fromVector({1.0, 2.0}));
+    });
 
     return 0;
 }

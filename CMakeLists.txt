@@ -6,6 +6,9 @@ add_library(neuroforge STATIC
     src/nn/Linear.cpp
     src/nn/Module.cpp
     src/nn/Parameter.cpp
+    src/nn/ReLU.cpp
+    src/nn/Sigmoid.cpp
+    src/nn/Tanh.cpp
     src/core/Random.cpp
     src/core/Shape.cpp
     src/core/Tensor.cpp
