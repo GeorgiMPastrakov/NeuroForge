@@ -1,5 +1,7 @@
 #include "VisualApp.hpp"
 
+#include "LossPlotView.hpp"
+#include "ModelGraphView.hpp"
 #include "imgui.h"
 #include "implot.h"
 #include "backends/imgui_impl_glfw.h"
@@ -123,28 +125,10 @@ void VisualApp::drawFrame() {
     ImGui::Separator();
     ImGui::Columns(3, "dashboard_columns", true);
 
-    ImGui::TextUnformatted("Model");
-    ImGui::Text("Layers: %zu", model_snapshot_.layers.size());
-    ImGui::Text("Parameters: %zu", model_snapshot_.total_parameters);
-    for (const neuroforge::LayerInfo& layer : model_snapshot_.layers) {
-        ImGui::BulletText("%s (%zu)", layer.name.c_str(), layer.parameter_count);
-    }
+    visual_lab::drawModelGraphView(model_snapshot_);
 
     ImGui::NextColumn();
-    ImGui::TextUnformatted("Training");
-    ImGui::Text("Epochs: %zu", loss_snapshot_.epochs.size());
-    if (!loss_snapshot_.losses.empty()) {
-        ImGui::Text("Final loss: %.6f", loss_snapshot_.losses.back());
-    }
-    if (!loss_snapshot_.losses.empty() && ImPlot::BeginPlot("Loss", ImVec2(-1, 260))) {
-        std::vector<double> epochs;
-        epochs.reserve(loss_snapshot_.epochs.size());
-        for (size_t epoch : loss_snapshot_.epochs) {
-            epochs.push_back(static_cast<double>(epoch));
-        }
-        ImPlot::PlotLine("MSE", epochs.data(), loss_snapshot_.losses.data(), static_cast<int>(loss_snapshot_.losses.size()));
-        ImPlot::EndPlot();
-    }
+    visual_lab::drawLossPlotView(loss_snapshot_);
 
     ImGui::NextColumn();
     ImGui::TextUnformatted("Predictions");

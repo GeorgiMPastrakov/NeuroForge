@@ -49,6 +49,8 @@ target_link_libraries(neuroforge_imgui PUBLIC glfw OpenGL::GL)
 add_executable(neuroforge_visual_lab
     main.cpp
     VisualApp.cpp
+    ModelGraphView.cpp
+    LossPlotView.cpp
 )
 
 target_link_libraries(neuroforge_visual_lab PRIVATE neuroforge neuroforge_imgui)
