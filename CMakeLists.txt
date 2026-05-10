@@ -19,7 +19,9 @@ add_library(neuroforge STATIC
     src/core/Shape.cpp
     src/core/Tensor.cpp
     src/data/CSVDataset.cpp
+    src/data/DataLoader.cpp
     src/data/Dataset.cpp
+    src/data/TrainTestSplitter.cpp
 )
 
 target_compile_features(neuroforge PUBLIC cxx_std_20)

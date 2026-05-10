@@ -1,10 +1,13 @@
 #include "neuroforge/data/CSVDataset.hpp"
+#include "neuroforge/data/DataLoader.hpp"
 #include "neuroforge/data/Dataset.hpp"
+#include "neuroforge/data/TrainTestSplitter.hpp"
 
 #include <cassert>
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
+#include <vector>
 
 using namespace neuroforge;
 
@@ -104,6 +107,51 @@ int main() {
     });
     expectThrows<std::invalid_argument>([&] {
         CSVDataset invalid(valid_path.string(), 3);
+    });
+
+    DataLoader loader(dataset, 2);
+    std::vector<Batch> batches = loader.batches();
+    assert(batches.size() == 2);
+    assert(batches[0].features.shape() == Shape({2, 2}));
+    assert(batches[0].labels.shape() == Shape({2, 1}));
+    assert(batches[1].features.shape() == Shape({1, 2}));
+    assert(batches[0].features.at(0, 0) == 1.0);
+    assert(batches[0].features.at(1, 0) == 3.0);
+    assert(batches[1].features.at(0, 0) == 5.0);
+
+    DataLoader shuffled_a(dataset, 1, true, 42);
+    DataLoader shuffled_b(dataset, 1, true, 42);
+    std::vector<Batch> shuffled_a_batches = shuffled_a.batches();
+    std::vector<Batch> shuffled_b_batches = shuffled_b.batches();
+    assert(shuffled_a_batches.size() == shuffled_b_batches.size());
+    for (size_t index = 0; index < shuffled_a_batches.size(); ++index) {
+        assert(shuffled_a_batches[index].features.at(0, 0) == shuffled_b_batches[index].features.at(0, 0));
+    }
+
+    expectThrows<std::invalid_argument>([&] {
+        DataLoader invalid(dataset, 0);
+    });
+
+    TrainTestSplit split = TrainTestSplitter::split(dataset, 0.67, false);
+    assert(split.train.size() == 2);
+    assert(split.test.size() == 1);
+    assert(split.train.features().at(0, 0) == 1.0);
+    assert(split.train.features().at(1, 0) == 3.0);
+    assert(split.test.features().at(0, 0) == 5.0);
+
+    TrainTestSplit shuffled_split_a = TrainTestSplitter::split(dataset, 0.67, true, 12);
+    TrainTestSplit shuffled_split_b = TrainTestSplitter::split(dataset, 0.67, true, 12);
+    assert(shuffled_split_a.train.features().at(0, 0) == shuffled_split_b.train.features().at(0, 0));
+    assert(shuffled_split_a.test.features().at(0, 0) == shuffled_split_b.test.features().at(0, 0));
+
+    expectThrows<std::invalid_argument>([&] {
+        TrainTestSplitter::split(Dataset(Tensor::fromVector({{1.0}}), Tensor::fromVector({{1.0}})), 0.8);
+    });
+    expectThrows<std::invalid_argument>([&] {
+        TrainTestSplitter::split(dataset, 0.0);
+    });
+    expectThrows<std::invalid_argument>([&] {
+        TrainTestSplitter::split(dataset, 1.0);
     });
 
     return 0;
