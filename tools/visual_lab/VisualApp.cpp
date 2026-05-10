@@ -1,5 +1,7 @@
 #include "VisualApp.hpp"
 
+#include "DatasetScatterView.hpp"
+#include "DecisionBoundaryView.hpp"
 #include "GradientView.hpp"
 #include "LossPlotView.hpp"
 #include "ModelGraphView.hpp"
@@ -15,7 +17,8 @@
 
 VisualApp::VisualApp()
     : dataset_(neuroforge::Tensor::fromVector({{0.0, 0.0}}), neuroforge::Tensor::fromVector({{0.0}})),
-      prediction_(neuroforge::Tensor::fromVector({0.0})) {
+      prediction_(neuroforge::Tensor::fromVector({0.0})),
+      decision_grid_(neuroforge::DecisionBoundaryGrid{2, 2, {}, {}, {}}) {
     buildDemoState();
 }
 
@@ -113,6 +116,7 @@ void VisualApp::refreshSnapshots() {
     model_snapshot_ = neuroforge::buildModelSnapshot(model_);
     loss_snapshot_ = neuroforge::buildLossHistorySnapshot(history_);
     gradient_snapshots_ = neuroforge::buildGradientSnapshots(model_, 12);
+    decision_grid_ = neuroforge::buildDecisionBoundaryGrid(model_, -0.25, 1.25, -0.25, 1.25, 30, 30);
     tensor_snapshots_.clear();
 
     for (neuroforge::Parameter* parameter : model_.parameters()) {
@@ -148,6 +152,12 @@ void VisualApp::drawFrame() {
             dataset_.labels().at(row, 0));
     }
 
+    ImGui::Columns(1);
+    ImGui::Separator();
+    ImGui::Columns(2, "dataset_columns", true);
+    visual_lab::drawDatasetScatterView(dataset_);
+    ImGui::NextColumn();
+    visual_lab::drawDecisionBoundaryView(decision_grid_);
     ImGui::Columns(1);
     ImGui::Separator();
     ImGui::Columns(2, "inspection_columns", true);

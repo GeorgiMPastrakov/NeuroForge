@@ -20,6 +20,7 @@ private:
     neuroforge::Tensor prediction_;
     std::vector<neuroforge::TensorSnapshot> tensor_snapshots_;
     std::vector<neuroforge::GradientSnapshot> gradient_snapshots_;
+    neuroforge::DecisionBoundaryGrid decision_grid_;
 
     void buildDemoState();
     void refreshSnapshots();
