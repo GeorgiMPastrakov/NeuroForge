@@ -4,6 +4,7 @@
 #include "neuroforge/visualization/VisualizationData.hpp"
 
 #include <memory>
+#include <vector>
 
 class VisualApp {
 public:
@@ -17,6 +18,8 @@ private:
     neuroforge::ModelSnapshot model_snapshot_;
     neuroforge::LossHistorySnapshot loss_snapshot_;
     neuroforge::Tensor prediction_;
+    std::vector<neuroforge::TensorSnapshot> tensor_snapshots_;
+    std::vector<neuroforge::GradientSnapshot> gradient_snapshots_;
 
     void buildDemoState();
     void refreshSnapshots();

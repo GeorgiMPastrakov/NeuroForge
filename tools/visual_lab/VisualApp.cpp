@@ -1,7 +1,9 @@
 #include "VisualApp.hpp"
 
+#include "GradientView.hpp"
 #include "LossPlotView.hpp"
 #include "ModelGraphView.hpp"
+#include "TensorInspectorView.hpp"
 #include "imgui.h"
 #include "implot.h"
 #include "backends/imgui_impl_glfw.h"
@@ -110,6 +112,12 @@ void VisualApp::buildDemoState() {
 void VisualApp::refreshSnapshots() {
     model_snapshot_ = neuroforge::buildModelSnapshot(model_);
     loss_snapshot_ = neuroforge::buildLossHistorySnapshot(history_);
+    gradient_snapshots_ = neuroforge::buildGradientSnapshots(model_, 12);
+    tensor_snapshots_.clear();
+
+    for (neuroforge::Parameter* parameter : model_.parameters()) {
+        tensor_snapshots_.push_back(neuroforge::buildTensorSnapshot(parameter->name(), parameter->data(), 12));
+    }
 }
 
 void VisualApp::drawFrame() {
@@ -140,6 +148,12 @@ void VisualApp::drawFrame() {
             dataset_.labels().at(row, 0));
     }
 
+    ImGui::Columns(1);
+    ImGui::Separator();
+    ImGui::Columns(2, "inspection_columns", true);
+    visual_lab::drawTensorInspectorView(tensor_snapshots_);
+    ImGui::NextColumn();
+    visual_lab::drawGradientView(gradient_snapshots_);
     ImGui::Columns(1);
     ImGui::End();
 }
