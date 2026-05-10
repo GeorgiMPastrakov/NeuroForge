@@ -39,7 +39,9 @@ public:
     Tensor multiply(const Tensor& other) const;
     Tensor multiply(double scalar) const;
     Tensor matmul(const Tensor& other) const;
+    Tensor addRowVector(const Tensor& row_vector) const;
     Tensor transpose() const;
+    Tensor pow(double exponent) const;
     Tensor relu() const;
     Tensor sigmoid() const;
     Tensor tanh() const;

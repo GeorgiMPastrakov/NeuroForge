@@ -70,6 +70,79 @@ int main() {
         vector.backward();
     });
 
+    Tensor add_left(std::vector<double>{1.0, 2.0}, Shape({2}), true);
+    Tensor add_right(std::vector<double>{3.0, 4.0}, Shape({2}), true);
+    add_left.add(add_right).sum().backward();
+    assert(near(add_left.grad()[0], 1.0));
+    assert(near(add_left.grad()[1], 1.0));
+    assert(near(add_right.grad()[0], 1.0));
+    assert(near(add_right.grad()[1], 1.0));
+
+    Tensor subtract_left(std::vector<double>{1.0, 2.0}, Shape({2}), true);
+    Tensor subtract_right(std::vector<double>{3.0, 4.0}, Shape({2}), true);
+    subtract_left.subtract(subtract_right).sum().backward();
+    assert(near(subtract_left.grad()[0], 1.0));
+    assert(near(subtract_left.grad()[1], 1.0));
+    assert(near(subtract_right.grad()[0], -1.0));
+    assert(near(subtract_right.grad()[1], -1.0));
+
+    Tensor multiply_left(std::vector<double>{2.0, 3.0}, Shape({2}), true);
+    Tensor multiply_right(std::vector<double>{4.0, 5.0}, Shape({2}), true);
+    multiply_left.multiply(multiply_right).sum().backward();
+    assert(near(multiply_left.grad()[0], 4.0));
+    assert(near(multiply_left.grad()[1], 5.0));
+    assert(near(multiply_right.grad()[0], 2.0));
+    assert(near(multiply_right.grad()[1], 3.0));
+
+    Tensor scalar_multiply(std::vector<double>{2.0, 3.0}, Shape({2}), true);
+    scalar_multiply.multiply(2.5).sum().backward();
+    assert(near(scalar_multiply.grad()[0], 2.5));
+    assert(near(scalar_multiply.grad()[1], 2.5));
+
+    Tensor mean_input(std::vector<double>{2.0, 4.0}, Shape({2}), true);
+    mean_input.mean().backward();
+    assert(near(mean_input.grad()[0], 0.5));
+    assert(near(mean_input.grad()[1], 0.5));
+
+    Tensor tensor_pow_input(std::vector<double>{2.0, 3.0}, Shape({2}), true);
+    tensor_pow_input.pow(3.0).sum().backward();
+    assert(near(tensor_pow_input.grad()[0], 12.0));
+    assert(near(tensor_pow_input.grad()[1], 27.0));
+
+    Tensor matmul_left(std::vector<double>{1.0, 2.0, 3.0, 4.0}, Shape({2, 2}), true);
+    Tensor matmul_right(std::vector<double>{5.0, 6.0}, Shape({2, 1}), true);
+    matmul_left.matmul(matmul_right).sum().backward();
+    assert(near(matmul_left.grad()[0], 5.0));
+    assert(near(matmul_left.grad()[1], 6.0));
+    assert(near(matmul_left.grad()[2], 5.0));
+    assert(near(matmul_left.grad()[3], 6.0));
+    assert(near(matmul_right.grad()[0], 4.0));
+    assert(near(matmul_right.grad()[1], 6.0));
+
+    Tensor row_left(std::vector<double>{1.0, 2.0, 3.0, 4.0}, Shape({2, 2}), true);
+    Tensor row_right(std::vector<double>{10.0, 20.0}, Shape({1, 2}), true);
+    row_left.addRowVector(row_right).sum().backward();
+    assert(near(row_left.grad()[0], 1.0));
+    assert(near(row_left.grad()[1], 1.0));
+    assert(near(row_left.grad()[2], 1.0));
+    assert(near(row_left.grad()[3], 1.0));
+    assert(near(row_right.grad()[0], 2.0));
+    assert(near(row_right.grad()[1], 2.0));
+
+    Tensor relu_tensor(std::vector<double>{-1.0, 0.0, 2.0}, Shape({3}), true);
+    relu_tensor.relu().sum().backward();
+    assert(near(relu_tensor.grad()[0], 0.0));
+    assert(near(relu_tensor.grad()[1], 0.0));
+    assert(near(relu_tensor.grad()[2], 1.0));
+
+    Tensor sigmoid_tensor(std::vector<double>{0.0}, Shape({1}), true);
+    sigmoid_tensor.sigmoid().sum().backward();
+    assert(near(sigmoid_tensor.grad()[0], 0.25));
+
+    Tensor tanh_tensor(std::vector<double>{0.0}, Shape({1}), true);
+    tanh_tensor.tanh().sum().backward();
+    assert(near(tanh_tensor.grad()[0], 1.0));
+
     Value p(4.0, true);
     Value q(2.0, true);
     Value r = p / q - q;

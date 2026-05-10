@@ -143,7 +143,34 @@ Tensor Tensor::add(const Tensor& other) const {
         result.push_back(node_->data[index] + other.node_->data[index]);
     }
 
-    return Tensor(std::move(result), node_->shape);
+    const bool requires_grad = requiresGrad() || other.requiresGrad();
+    Tensor output(std::move(result), node_->shape, requires_grad);
+
+    if (requires_grad) {
+        auto left = node_;
+        auto right = other.node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {left, right};
+        output_node->backward = [weak_output, left, right] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                if (left->requires_grad) {
+                    left->backward_grad[index] += current->backward_grad[index];
+                }
+
+                if (right->requires_grad) {
+                    right->backward_grad[index] += current->backward_grad[index];
+                }
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::subtract(const Tensor& other) const {
@@ -156,7 +183,34 @@ Tensor Tensor::subtract(const Tensor& other) const {
         result.push_back(node_->data[index] - other.node_->data[index]);
     }
 
-    return Tensor(std::move(result), node_->shape);
+    const bool requires_grad = requiresGrad() || other.requiresGrad();
+    Tensor output(std::move(result), node_->shape, requires_grad);
+
+    if (requires_grad) {
+        auto left = node_;
+        auto right = other.node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {left, right};
+        output_node->backward = [weak_output, left, right] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                if (left->requires_grad) {
+                    left->backward_grad[index] += current->backward_grad[index];
+                }
+
+                if (right->requires_grad) {
+                    right->backward_grad[index] -= current->backward_grad[index];
+                }
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::multiply(const Tensor& other) const {
@@ -169,7 +223,34 @@ Tensor Tensor::multiply(const Tensor& other) const {
         result.push_back(node_->data[index] * other.node_->data[index]);
     }
 
-    return Tensor(std::move(result), node_->shape);
+    const bool requires_grad = requiresGrad() || other.requiresGrad();
+    Tensor output(std::move(result), node_->shape, requires_grad);
+
+    if (requires_grad) {
+        auto left = node_;
+        auto right = other.node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {left, right};
+        output_node->backward = [weak_output, left, right] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                if (left->requires_grad) {
+                    left->backward_grad[index] += current->backward_grad[index] * right->data[index];
+                }
+
+                if (right->requires_grad) {
+                    right->backward_grad[index] += current->backward_grad[index] * left->data[index];
+                }
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::multiply(double scalar) const {
@@ -180,7 +261,26 @@ Tensor Tensor::multiply(double scalar) const {
         result.push_back(value * scalar);
     }
 
-    return Tensor(std::move(result), node_->shape);
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent, scalar] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                parent->backward_grad[index] += current->backward_grad[index] * scalar;
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::matmul(const Tensor& other) const {
@@ -209,7 +309,110 @@ Tensor Tensor::matmul(const Tensor& other) const {
         }
     }
 
-    return Tensor(std::move(result), Shape({rows, cols}));
+    const bool requires_grad = requiresGrad() || other.requiresGrad();
+    Tensor output(std::move(result), Shape({rows, cols}), requires_grad);
+
+    if (requires_grad) {
+        auto left = node_;
+        auto right = other.node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {left, right};
+        output_node->backward = [weak_output, left, right, rows, inner, cols] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            if (left->requires_grad) {
+                for (size_t row = 0; row < rows; ++row) {
+                    for (size_t index = 0; index < inner; ++index) {
+                        double total = 0.0;
+
+                        for (size_t col = 0; col < cols; ++col) {
+                            total += current->backward_grad[row * cols + col] * right->data[index * cols + col];
+                        }
+
+                        left->backward_grad[row * inner + index] += total;
+                    }
+                }
+            }
+
+            if (right->requires_grad) {
+                for (size_t index = 0; index < inner; ++index) {
+                    for (size_t col = 0; col < cols; ++col) {
+                        double total = 0.0;
+
+                        for (size_t row = 0; row < rows; ++row) {
+                            total += left->data[row * inner + index] * current->backward_grad[row * cols + col];
+                        }
+
+                        right->backward_grad[index * cols + col] += total;
+                    }
+                }
+            }
+        };
+    }
+
+    return output;
+}
+
+Tensor Tensor::addRowVector(const Tensor& row_vector) const {
+    if (rank() != 2 || row_vector.rank() != 2) {
+        throw std::invalid_argument("AddRowVector requires rank 2 tensors.");
+    }
+
+    if (row_vector.shape().rows() != 1 || row_vector.shape().cols() != shape().cols()) {
+        throw std::invalid_argument("AddRowVector shape mismatch: left shape " + shape().toString() + " cannot add row vector shape " + row_vector.shape().toString() + ".");
+    }
+
+    const size_t rows = shape().rows();
+    const size_t cols = shape().cols();
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (size_t row = 0; row < rows; ++row) {
+        for (size_t col = 0; col < cols; ++col) {
+            result.push_back(at(row, col) + row_vector.at(0, col));
+        }
+    }
+
+    const bool requires_grad = requiresGrad() || row_vector.requiresGrad();
+    Tensor output(std::move(result), shape(), requires_grad);
+
+    if (requires_grad) {
+        auto left = node_;
+        auto right = row_vector.node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {left, right};
+        output_node->backward = [weak_output, left, right, rows, cols] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            if (left->requires_grad) {
+                for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                    left->backward_grad[index] += current->backward_grad[index];
+                }
+            }
+
+            if (right->requires_grad) {
+                for (size_t col = 0; col < cols; ++col) {
+                    double total = 0.0;
+
+                    for (size_t row = 0; row < rows; ++row) {
+                        total += current->backward_grad[row * cols + col];
+                    }
+
+                    right->backward_grad[col] += total;
+                }
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::transpose() const {
@@ -228,6 +431,36 @@ Tensor Tensor::transpose() const {
     return Tensor(std::move(result), Shape({node_->shape.cols(), node_->shape.rows()}));
 }
 
+Tensor Tensor::pow(double exponent) const {
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : node_->data) {
+        result.push_back(std::pow(value, exponent));
+    }
+
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent, exponent] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                parent->backward_grad[index] += current->backward_grad[index] * exponent * std::pow(parent->data[index], exponent - 1.0);
+            }
+        };
+    }
+
+    return output;
+}
+
 Tensor Tensor::relu() const {
     std::vector<double> result;
     result.reserve(size());
@@ -236,7 +469,26 @@ Tensor Tensor::relu() const {
         result.push_back(value > 0.0 ? value : 0.0);
     }
 
-    return Tensor(std::move(result), node_->shape);
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                parent->backward_grad[index] += parent->data[index] > 0.0 ? current->backward_grad[index] : 0.0;
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::sigmoid() const {
@@ -247,7 +499,27 @@ Tensor Tensor::sigmoid() const {
         result.push_back(1.0 / (1.0 + std::exp(-value)));
     }
 
-    return Tensor(std::move(result), node_->shape);
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                const double output_value = current->data[index];
+                parent->backward_grad[index] += current->backward_grad[index] * output_value * (1.0 - output_value);
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::tanh() const {
@@ -258,7 +530,27 @@ Tensor Tensor::tanh() const {
         result.push_back(std::tanh(value));
     }
 
-    return Tensor(std::move(result), node_->shape);
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                const double output_value = current->data[index];
+                parent->backward_grad[index] += current->backward_grad[index] * (1.0 - output_value * output_value);
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::sum() const {
@@ -268,11 +560,30 @@ Tensor Tensor::sum() const {
         total += value;
     }
 
-    return Tensor({total}, Shape({1}));
+    Tensor output({total}, Shape({1}), requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < parent->backward_grad.size(); ++index) {
+                parent->backward_grad[index] += current->backward_grad[0];
+            }
+        };
+    }
+
+    return output;
 }
 
 Tensor Tensor::mean() const {
-    return Tensor({sum().item() / static_cast<double>(size())}, Shape({1}));
+    return sum().multiply(1.0 / static_cast<double>(size()));
 }
 
 double Tensor::item() const {
