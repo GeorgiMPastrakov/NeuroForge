@@ -75,6 +75,8 @@ Run the CSV regression demo:
 ./build/examples/neuroforge_linear_regression
 ```
 
+The regression demo saves a trained model to `build/neuroforge_linear_regression_model.txt`.
+
 ## Public Include
 
 ```cpp
