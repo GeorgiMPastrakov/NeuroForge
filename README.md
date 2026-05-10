@@ -6,7 +6,7 @@ The goal is to build tensors, matrix operations, neural network layers, loss fun
 
 ## Current Status
 
-Phase 2 Math Core is implemented.
+Phase 3 Neural Network, Loss, and Optimizer is implemented.
 
 Implemented:
 
@@ -25,12 +25,16 @@ Implemented:
 - ReLU, sigmoid, and tanh
 - deterministic random initialization
 - core math tests
+- `Parameter`
+- `Module`
+- `Linear`
+- `ReLU`, `Sigmoid`, and `Tanh` modules
+- `Sequential`
+- `MSELoss`
+- `SGD`
 
 Not implemented yet:
 
-- neural network layers
-- loss functions
-- optimizers
 - training loop
 - autograd
 - data loading
@@ -56,36 +60,37 @@ ctest --test-dir build
 ```cpp
 #include "neuroforge/neuroforge.hpp"
 
+#include <memory>
+
 using namespace neuroforge;
 
 int main() {
-    Tensor a = Tensor::fromVector({
-        {1.0, 2.0},
-        {3.0, 4.0}
+    Sequential model;
+
+    model.add(std::make_shared<Linear>(2, 4));
+    model.add(std::make_shared<ReLU>());
+    model.add(std::make_shared<Linear>(4, 1));
+    model.add(std::make_shared<Sigmoid>());
+
+    Tensor input = Tensor::fromVector({
+        {0.0, 1.0}
     });
 
-    Tensor b = Tensor::fromVector({
-        {5.0, 6.0},
-        {7.0, 8.0}
-    });
+    Tensor output = model.forward(input);
 
-    Tensor c = a.matmul(b);
-
-    return c.at(0, 0) == 19.0 ? 0 : 1;
+    return output.shape() == Shape({1, 1}) ? 0 : 1;
 }
 ```
 
 ## Roadmap
 
-The next phase is Neural Network, Loss, and Optimizer:
+The next phase is Training and XOR:
 
-- `Parameter`
-- `Module`
-- `Linear`
-- `ReLU`, `Sigmoid`, and `Tanh` modules
-- `Sequential`
-- `MSELoss`
-- `SGD`
+- `TrainingConfig`
+- `TrainingHistory`
+- `Trainer`
+- XOR example
+- XOR loss decrease test
 
 Planning docs live in `docs/planning/`.
 
