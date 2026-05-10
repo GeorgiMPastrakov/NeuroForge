@@ -6,7 +6,7 @@ The goal is to build tensors, matrix operations, neural network layers, loss fun
 
 ## Current Status
 
-Phase 4 Training and XOR is implemented.
+Phase 5 Autograd is implemented.
 
 Implemented:
 
@@ -37,10 +37,15 @@ Implemented:
 - `Trainer`
 - XOR training example
 - deterministic training behavior tests
+- scalar `Value` autograd
+- Tensor gradient metadata
+- Tensor operation gradients
+- MSE autograd path
+- parameter gradient sync
+- `Trainer::fitAutograd`
 
 Not implemented yet:
 
-- autograd
 - data loading
 - serialization
 - visualization
@@ -94,13 +99,43 @@ int main() {
 
 ## Roadmap
 
-The next phase is Autograd:
+The next phase is Data, Metrics, and Serialization:
 
-- scalar `Value`
-- computation graph
-- tensor gradient storage
-- supported operation gradients
-- `loss.backward()` path
+- numeric CSV loading
+- batches and train/test splitting
+- MSE, MAE, and binary accuracy metrics
+- model save/load
+
+## Autograd Support
+
+Supported scalar `Value` operations:
+
+- addition
+- subtraction
+- multiplication
+- division
+- power
+- ReLU
+- sigmoid
+- tanh
+
+Supported Tensor autograd operations:
+
+- add
+- subtract
+- element-wise multiply
+- scalar multiply
+- matrix multiplication
+- row-vector bias addition
+- sum
+- mean
+- power
+- ReLU
+- sigmoid
+- tanh
+- MSE loss
+
+Manual backward training remains available through `Trainer::fit`. The autograd path is available through `Trainer::fitAutograd`.
 
 Planning docs live in `docs/planning/`.
 

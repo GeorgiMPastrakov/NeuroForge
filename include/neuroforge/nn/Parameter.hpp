@@ -16,6 +16,8 @@ public:
     const Tensor& grad() const;
     const std::string& name() const;
     void zero_grad();
+    void enableAutograd();
+    void syncAutogradGrad();
 
 private:
     Tensor data_;

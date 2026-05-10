@@ -14,6 +14,8 @@ public:
     virtual Tensor backward(const Tensor& grad_output) = 0;
     virtual std::vector<Parameter*> parameters();
     virtual void zero_grad();
+    virtual void enableAutograd();
+    virtual void syncAutogradGradients();
     virtual std::string name() const = 0;
     virtual ~Module() = default;
 };

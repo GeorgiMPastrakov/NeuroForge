@@ -3,7 +3,9 @@
 #include "neuroforge/core/Shape.hpp"
 
 #include <cstddef>
+#include <functional>
 #include <initializer_list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,7 +13,7 @@ namespace neuroforge {
 
 class Tensor {
 public:
-    Tensor(std::vector<double> data, Shape shape);
+    Tensor(std::vector<double> data, Shape shape, bool requires_grad = false);
 
     static Tensor fromVector(std::initializer_list<std::initializer_list<double>> values);
     static Tensor fromVector(const std::vector<double>& values);
@@ -37,17 +39,38 @@ public:
     Tensor multiply(const Tensor& other) const;
     Tensor multiply(double scalar) const;
     Tensor matmul(const Tensor& other) const;
+    Tensor addRowVector(const Tensor& row_vector) const;
     Tensor transpose() const;
+    Tensor pow(double exponent) const;
     Tensor relu() const;
     Tensor sigmoid() const;
     Tensor tanh() const;
     Tensor sum() const;
     Tensor mean() const;
     double item() const;
+    bool requiresGrad() const;
+    void setRequiresGrad(bool requires_grad);
+    const std::vector<double>& grad() const;
+    std::vector<double>& grad();
+    void zeroGrad();
+    void backward();
 
 private:
-    std::vector<double> data_;
-    Shape shape_;
+    struct Node {
+        Node(std::vector<double> data, Shape shape, bool requires_grad);
+
+        std::vector<double> data;
+        Shape shape;
+        std::vector<double> grad;
+        std::vector<double> backward_grad;
+        bool requires_grad = false;
+        std::vector<std::shared_ptr<Node>> parents;
+        std::function<void()> backward;
+    };
+
+    explicit Tensor(std::shared_ptr<Node> node);
+
+    std::shared_ptr<Node> node_;
 
     size_t flatIndex(size_t row, size_t col) const;
     void requireSameShape(const Tensor& other, const std::string& operation) const;

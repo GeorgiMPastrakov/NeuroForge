@@ -2,12 +2,17 @@
 
 ## Current State
 
-The repository contains project governance only:
+The repository has completed Phases 1 through 4 and is implementing Phase 5 on `autograd-engine`.
 
-- `AGENTS.md`
-- `.agents/skills/*/SKILL.md`
+Implemented so far:
 
-No C++ project skeleton exists yet.
+- CMake skeleton and public umbrella header
+- `Shape`, `Tensor`, math operations, and deterministic random initialization
+- neural network layers, MSE loss, SGD, and manual backward
+- trainer, training history, deterministic XOR demo, and training tests
+- scalar `Value` autograd
+- Tensor autograd metadata and operation gradients
+- autograd-backed MSE, parameter sync, and `Trainer::fitAutograd`
 
 ## Target
 

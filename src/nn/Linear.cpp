@@ -22,15 +22,7 @@ Tensor Linear::forward(const Tensor& input) {
     validateInput(input);
     cached_input_ = input;
 
-    Tensor output = input.matmul(weights_.data());
-
-    for (size_t row = 0; row < output.shape().rows(); ++row) {
-        for (size_t col = 0; col < output.shape().cols(); ++col) {
-            output.at(row, col) += bias_.data().at(0, col);
-        }
-    }
-
-    return output;
+    return input.matmul(weights_.data()).addRowVector(bias_.data());
 }
 
 Tensor Linear::backward(const Tensor& grad_output) {
