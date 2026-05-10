@@ -2,7 +2,7 @@
 
 ## Current State
 
-The repository has completed Phases 1 through 6 and is ready for Phase 7 visualization work.
+The repository has completed Phases 1 through 7 and is ready for Phase 8 polish and release work.
 
 Implemented so far:
 
@@ -18,6 +18,8 @@ Implemented so far:
 - evaluation metrics
 - Sequential model save/load
 - CSV regression demo
+- optional NeuroForge Visual Lab
+- model architecture, loss, tensor, gradient, dataset, and decision boundary views
 
 ## Target
 

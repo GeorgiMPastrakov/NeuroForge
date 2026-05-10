@@ -25,6 +25,7 @@ add_library(neuroforge STATIC
     src/data/Dataset.cpp
     src/data/TrainTestSplitter.cpp
     src/metrics/Metrics.cpp
+    src/visualization/VisualizationData.cpp
 )
 
 target_compile_features(neuroforge PUBLIC cxx_std_20)
@@ -39,3 +40,9 @@ enable_testing()
 
 add_subdirectory(tests)
 add_subdirectory(examples)
+
+option(NEUROFORGE_BUILD_VISUALIZER "Build NeuroForge Visual Lab" OFF)
+
+if(NEUROFORGE_BUILD_VISUALIZER)
+    add_subdirectory(tools/visual_lab)
+endif()

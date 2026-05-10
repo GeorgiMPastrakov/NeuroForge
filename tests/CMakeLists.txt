@@ -63,3 +63,9 @@ add_executable(neuroforge_serialization test_serialization.cpp)
 target_link_libraries(neuroforge_serialization PRIVATE neuroforge)
 
 add_test(NAME neuroforge_serialization COMMAND neuroforge_serialization)
+
+add_executable(neuroforge_visualization test_visualization.cpp)
+
+target_link_libraries(neuroforge_visualization PRIVATE neuroforge)
+
+add_test(NAME neuroforge_visualization COMMAND neuroforge_visualization)
