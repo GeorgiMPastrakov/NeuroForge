@@ -15,3 +15,9 @@ add_executable(neuroforge_tensor test_tensor.cpp)
 target_link_libraries(neuroforge_tensor PRIVATE neuroforge)
 
 add_test(NAME neuroforge_tensor COMMAND neuroforge_tensor)
+
+add_executable(neuroforge_nn test_nn.cpp)
+
+target_link_libraries(neuroforge_nn PRIVATE neuroforge)
+
+add_test(NAME neuroforge_nn COMMAND neuroforge_nn)
