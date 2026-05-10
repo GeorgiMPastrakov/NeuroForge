@@ -6,7 +6,7 @@ The goal is to build tensors, matrix operations, neural network layers, loss fun
 
 ## Current Status
 
-Phase 1 is in progress.
+Phase 1 skeleton is implemented.
 
 Implemented:
 
