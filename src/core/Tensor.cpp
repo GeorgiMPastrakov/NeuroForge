@@ -1,5 +1,6 @@
 #include "neuroforge/core/Tensor.hpp"
 
+#include <cmath>
 #include <stdexcept>
 
 namespace neuroforge {
@@ -209,6 +210,39 @@ Tensor Tensor::transpose() const {
     }
 
     return Tensor(std::move(result), Shape({shape_.cols(), shape_.rows()}));
+}
+
+Tensor Tensor::relu() const {
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : data_) {
+        result.push_back(value > 0.0 ? value : 0.0);
+    }
+
+    return Tensor(std::move(result), shape_);
+}
+
+Tensor Tensor::sigmoid() const {
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : data_) {
+        result.push_back(1.0 / (1.0 + std::exp(-value)));
+    }
+
+    return Tensor(std::move(result), shape_);
+}
+
+Tensor Tensor::tanh() const {
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : data_) {
+        result.push_back(std::tanh(value));
+    }
+
+    return Tensor(std::move(result), shape_);
 }
 
 Tensor Tensor::sum() const {

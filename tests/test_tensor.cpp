@@ -1,4 +1,5 @@
 #include "neuroforge/core/Tensor.hpp"
+#include "neuroforge/core/Random.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -159,6 +160,30 @@ int main() {
     expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).matmul(Tensor::fromVector({1.0})); });
     expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).transpose(); });
     expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0, 2.0}).item(); });
+
+    Tensor activation_input = Tensor::fromVector({-1.0, 0.0, 1.0});
+    Tensor relu = activation_input.relu();
+    assert(relu.at(0) == 0.0);
+    assert(relu.at(1) == 0.0);
+    assert(relu.at(2) == 1.0);
+
+    Tensor sigmoid = activation_input.sigmoid();
+    assert(near(sigmoid.at(0), 1.0 / (1.0 + std::exp(1.0))));
+    assert(near(sigmoid.at(1), 0.5));
+    assert(near(sigmoid.at(2), 1.0 / (1.0 + std::exp(-1.0))));
+
+    Tensor tanh = activation_input.tanh();
+    assert(near(tanh.at(0), std::tanh(-1.0)));
+    assert(near(tanh.at(1), 0.0));
+    assert(near(tanh.at(2), std::tanh(1.0)));
+
+    Random::seed(42);
+    Tensor random_a = Random::uniform(Shape({2, 2}), -1.0, 1.0);
+    Random::seed(42);
+    Tensor random_b = Random::uniform(Shape({2, 2}), -1.0, 1.0);
+    assert(random_a.shape() == Shape({2, 2}));
+    assert(random_a.data() == random_b.data());
+    expectThrows<std::invalid_argument>([] { Random::uniform(Shape({1}), 1.0, -1.0); });
 
     return 0;
 }

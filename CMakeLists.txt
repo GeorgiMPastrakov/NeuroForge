@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(NeuroForge VERSION 0.1.0 LANGUAGES CXX)
 
 add_library(neuroforge STATIC
+    src/core/Random.cpp
     src/core/Shape.cpp
     src/core/Tensor.cpp
 )

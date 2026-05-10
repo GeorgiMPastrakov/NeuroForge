@@ -38,6 +38,9 @@ public:
     Tensor multiply(double scalar) const;
     Tensor matmul(const Tensor& other) const;
     Tensor transpose() const;
+    Tensor relu() const;
+    Tensor sigmoid() const;
+    Tensor tanh() const;
     Tensor sum() const;
     Tensor mean() const;
     double item() const;
