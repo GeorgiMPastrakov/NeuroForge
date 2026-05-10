@@ -21,3 +21,9 @@ add_executable(neuroforge_nn test_nn.cpp)
 target_link_libraries(neuroforge_nn PRIVATE neuroforge)
 
 add_test(NAME neuroforge_nn COMMAND neuroforge_nn)
+
+add_executable(neuroforge_losses test_losses.cpp)
+
+target_link_libraries(neuroforge_losses PRIVATE neuroforge)
+
+add_test(NAME neuroforge_losses COMMAND neuroforge_losses)
