@@ -1,6 +1,7 @@
 #include "neuroforge/core/Tensor.hpp"
 
 #include <cassert>
+#include <cmath>
 #include <stdexcept>
 
 using namespace neuroforge;
@@ -16,6 +17,10 @@ void expectThrows(Function function) {
     }
 
     assert(thrown);
+}
+
+bool near(double left, double right) {
+    return std::fabs(left - right) < 1e-9;
 }
 
 int main() {
@@ -63,6 +68,52 @@ int main() {
     expectThrows<std::invalid_argument>([] { Tensor::fromVector(std::vector<std::vector<double>>{{1.0}}).at(0); });
     expectThrows<std::out_of_range>([] { Tensor::fromVector({1.0}).at(1); });
     expectThrows<std::out_of_range>([] { Tensor::fromVector(std::vector<std::vector<double>>{{1.0}}).at(1, 0); });
+
+    Tensor left = Tensor::fromVector({
+        {1.0, 2.0},
+        {3.0, 4.0}
+    });
+    Tensor right = Tensor::fromVector({
+        {5.0, 6.0},
+        {7.0, 8.0}
+    });
+
+    Tensor added = left.add(right);
+    assert(added.shape() == Shape({2, 2}));
+    assert(added.at(0, 0) == 6.0);
+    assert(added.at(1, 1) == 12.0);
+
+    Tensor subtracted = right.subtract(left);
+    assert(subtracted.at(0, 0) == 4.0);
+    assert(subtracted.at(1, 1) == 4.0);
+
+    Tensor multiplied = left.multiply(right);
+    assert(multiplied.at(0, 0) == 5.0);
+    assert(multiplied.at(1, 1) == 32.0);
+
+    Tensor scaled = left.multiply(2.0);
+    assert(scaled.at(0, 0) == 2.0);
+    assert(scaled.at(1, 1) == 8.0);
+
+    Tensor transposed = Tensor::fromVector({
+        {1.0, 2.0, 3.0},
+        {4.0, 5.0, 6.0}
+    }).transpose();
+    assert(transposed.shape() == Shape({3, 2}));
+    assert(transposed.at(0, 0) == 1.0);
+    assert(transposed.at(0, 1) == 4.0);
+    assert(transposed.at(2, 0) == 3.0);
+    assert(transposed.at(2, 1) == 6.0);
+
+    assert(left.sum().shape() == Shape({1}));
+    assert(left.sum().item() == 10.0);
+    assert(near(left.mean().item(), 2.5));
+
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).add(Tensor::fromVector({1.0, 2.0})); });
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).subtract(Tensor::fromVector({1.0, 2.0})); });
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).multiply(Tensor::fromVector({1.0, 2.0})); });
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).transpose(); });
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0, 2.0}).item(); });
 
     return 0;
 }

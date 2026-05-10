@@ -3,6 +3,7 @@
 #include "neuroforge/core/Shape.hpp"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace neuroforge {
@@ -29,11 +30,21 @@ public:
     double at(size_t row, size_t col) const;
     double& at(size_t row, size_t col);
 
+    Tensor add(const Tensor& other) const;
+    Tensor subtract(const Tensor& other) const;
+    Tensor multiply(const Tensor& other) const;
+    Tensor multiply(double scalar) const;
+    Tensor transpose() const;
+    Tensor sum() const;
+    Tensor mean() const;
+    double item() const;
+
 private:
     std::vector<double> data_;
     Shape shape_;
 
     size_t flatIndex(size_t row, size_t col) const;
+    void requireSameShape(const Tensor& other, const std::string& operation) const;
 };
 
 }

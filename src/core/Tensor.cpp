@@ -105,6 +105,94 @@ double& Tensor::at(size_t row, size_t col) {
     return data_[flatIndex(row, col)];
 }
 
+Tensor Tensor::add(const Tensor& other) const {
+    requireSameShape(other, "Add");
+
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (size_t index = 0; index < size(); ++index) {
+        result.push_back(data_[index] + other.data_[index]);
+    }
+
+    return Tensor(std::move(result), shape_);
+}
+
+Tensor Tensor::subtract(const Tensor& other) const {
+    requireSameShape(other, "Subtract");
+
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (size_t index = 0; index < size(); ++index) {
+        result.push_back(data_[index] - other.data_[index]);
+    }
+
+    return Tensor(std::move(result), shape_);
+}
+
+Tensor Tensor::multiply(const Tensor& other) const {
+    requireSameShape(other, "Multiply");
+
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (size_t index = 0; index < size(); ++index) {
+        result.push_back(data_[index] * other.data_[index]);
+    }
+
+    return Tensor(std::move(result), shape_);
+}
+
+Tensor Tensor::multiply(double scalar) const {
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : data_) {
+        result.push_back(value * scalar);
+    }
+
+    return Tensor(std::move(result), shape_);
+}
+
+Tensor Tensor::transpose() const {
+    if (rank() != 2) {
+        throw std::invalid_argument("Transpose requires rank 2 tensor.");
+    }
+
+    std::vector<double> result(size());
+
+    for (size_t row = 0; row < shape_.rows(); ++row) {
+        for (size_t col = 0; col < shape_.cols(); ++col) {
+            result[col * shape_.rows() + row] = at(row, col);
+        }
+    }
+
+    return Tensor(std::move(result), Shape({shape_.cols(), shape_.rows()}));
+}
+
+Tensor Tensor::sum() const {
+    double total = 0.0;
+
+    for (double value : data_) {
+        total += value;
+    }
+
+    return Tensor({total}, Shape({1}));
+}
+
+Tensor Tensor::mean() const {
+    return Tensor({sum().item() / static_cast<double>(size())}, Shape({1}));
+}
+
+double Tensor::item() const {
+    if (size() != 1) {
+        throw std::invalid_argument("Tensor item requires exactly one element.");
+    }
+
+    return data_[0];
+}
+
 size_t Tensor::flatIndex(size_t row, size_t col) const {
     if (rank() != 2) {
         throw std::invalid_argument("Tensor 2D indexing requires rank 2 tensor.");
@@ -115,6 +203,12 @@ size_t Tensor::flatIndex(size_t row, size_t col) const {
     }
 
     return row * shape_.cols() + col;
+}
+
+void Tensor::requireSameShape(const Tensor& other, const std::string& operation) const {
+    if (shape_ != other.shape_) {
+        throw std::invalid_argument(operation + " shape mismatch: left shape " + shape_.toString() + " does not match right shape " + other.shape_.toString() + ".");
+    }
 }
 
 }
