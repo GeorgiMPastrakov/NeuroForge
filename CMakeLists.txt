@@ -39,3 +39,9 @@ enable_testing()
 
 add_subdirectory(tests)
 add_subdirectory(examples)
+
+option(NEUROFORGE_BUILD_VISUALIZER "Build NeuroForge Visual Lab" OFF)
+
+if(NEUROFORGE_BUILD_VISUALIZER)
+    add_subdirectory(tools/visual_lab)
+endif()
