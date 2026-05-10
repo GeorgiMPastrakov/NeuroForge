@@ -1,5 +1,7 @@
 #include "neuroforge/autograd/Value.hpp"
 #include "neuroforge/core/Tensor.hpp"
+#include "neuroforge/losses/MSELoss.hpp"
+#include "neuroforge/nn/Parameter.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -142,6 +144,25 @@ int main() {
     Tensor tanh_tensor(std::vector<double>{0.0}, Shape({1}), true);
     tanh_tensor.tanh().sum().backward();
     assert(near(tanh_tensor.grad()[0], 1.0));
+
+    MSELoss mse;
+    Tensor prediction(std::vector<double>{2.0, 4.0}, Shape({2}), true);
+    Tensor target = Tensor::fromVector({1.0, 1.0});
+    Tensor mse_value = mse.forward(prediction, target);
+    mse_value.backward();
+    assert(near(mse_value.item(), 5.0));
+    assert(near(prediction.grad()[0], 1.0));
+    assert(near(prediction.grad()[1], 3.0));
+
+    Parameter parameter(Tensor(std::vector<double>{2.0, 3.0}, Shape({2}), true), "parameter");
+    parameter.enableAutograd();
+    parameter.data().multiply(3.0).sum().backward();
+    parameter.syncAutogradGrad();
+    assert(near(parameter.grad().at(0), 3.0));
+    assert(near(parameter.grad().at(1), 3.0));
+    parameter.zero_grad();
+    assert(near(parameter.grad().at(0), 0.0));
+    assert(near(parameter.data().grad()[0], 0.0));
 
     Value p(4.0, true);
     Value q(2.0, true);

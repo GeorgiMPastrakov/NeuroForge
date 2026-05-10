@@ -12,6 +12,10 @@ Tensor MSELoss::forward(const Tensor& prediction, const Tensor& target) {
     prediction_ = prediction;
     target_ = target;
 
+    if (prediction.requiresGrad()) {
+        return prediction.subtract(target).pow(2.0).mean();
+    }
+
     double total = 0.0;
 
     for (size_t index = 0; index < prediction.size(); ++index) {

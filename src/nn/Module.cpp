@@ -12,4 +12,16 @@ void Module::zero_grad() {
     }
 }
 
+void Module::enableAutograd() {
+    for (Parameter* parameter : parameters()) {
+        parameter->enableAutograd();
+    }
+}
+
+void Module::syncAutogradGradients() {
+    for (Parameter* parameter : parameters()) {
+        parameter->syncAutogradGrad();
+    }
+}
+
 }

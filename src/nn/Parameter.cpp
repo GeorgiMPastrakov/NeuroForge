@@ -1,5 +1,6 @@
 #include "neuroforge/nn/Parameter.hpp"
 
+#include <stdexcept>
 #include <utility>
 
 namespace neuroforge {
@@ -30,6 +31,21 @@ const std::string& Parameter::name() const {
 
 void Parameter::zero_grad() {
     grad_ = Tensor::zeros(data_.shape());
+    data_.zeroGrad();
+}
+
+void Parameter::enableAutograd() {
+    data_.setRequiresGrad(true);
+}
+
+void Parameter::syncAutogradGrad() {
+    if (data_.grad().size() != grad_.size()) {
+        throw std::invalid_argument("Parameter autograd gradient size must match parameter gradient size.");
+    }
+
+    for (size_t index = 0; index < grad_.size(); ++index) {
+        grad_.data()[index] = data_.grad()[index];
+    }
 }
 
 }
