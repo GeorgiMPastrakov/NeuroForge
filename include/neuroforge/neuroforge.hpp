@@ -1,5 +1,6 @@
 #pragma once
 
+#include "neuroforge/autograd/Value.hpp"
 #include "neuroforge/core/Random.hpp"
 #include "neuroforge/core/Shape.hpp"
 #include "neuroforge/core/Tensor.hpp"

@@ -221,20 +221,7 @@ namespace neuroforge {
 }
 ```
 
-Comments should explain important math and design decisions.
-
-Good comment:
-
-```cpp
-// d/dx sigmoid(x) = sigmoid(x) * (1 - sigmoid(x))
-// We reuse the cached output from the forward pass.
-```
-
-Bad comment:
-
-```cpp
-// increment i
-```
+Do not add comments to code.
 
 ---
 
