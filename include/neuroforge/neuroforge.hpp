@@ -14,6 +14,9 @@
 #include "neuroforge/nn/Tanh.hpp"
 #include "neuroforge/optim/Optimizer.hpp"
 #include "neuroforge/optim/SGD.hpp"
+#include "neuroforge/training/Trainer.hpp"
+#include "neuroforge/training/TrainingConfig.hpp"
+#include "neuroforge/training/TrainingHistory.hpp"
 
 namespace neuroforge {
 }

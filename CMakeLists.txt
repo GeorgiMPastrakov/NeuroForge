@@ -30,3 +30,4 @@ target_include_directories(neuroforge
 enable_testing()
 
 add_subdirectory(tests)
+add_subdirectory(examples)
