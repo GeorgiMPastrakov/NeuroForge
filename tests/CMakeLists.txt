@@ -45,3 +45,9 @@ add_executable(neuroforge_autograd test_autograd.cpp)
 target_link_libraries(neuroforge_autograd PRIVATE neuroforge)
 
 add_test(NAME neuroforge_autograd COMMAND neuroforge_autograd)
+
+add_executable(neuroforge_data test_data.cpp)
+
+target_link_libraries(neuroforge_data PRIVATE neuroforge)
+
+add_test(NAME neuroforge_data COMMAND neuroforge_data)

@@ -18,6 +18,8 @@ add_library(neuroforge STATIC
     src/core/Random.cpp
     src/core/Shape.cpp
     src/core/Tensor.cpp
+    src/data/CSVDataset.cpp
+    src/data/Dataset.cpp
 )
 
 target_compile_features(neuroforge PUBLIC cxx_std_20)
