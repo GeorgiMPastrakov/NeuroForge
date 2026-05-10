@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(NeuroForge VERSION 0.1.0 LANGUAGES CXX)
 
 add_library(neuroforge STATIC
+    src/autograd/Value.cpp
     src/losses/MSELoss.cpp
     src/nn/Linear.cpp
     src/nn/Module.cpp
