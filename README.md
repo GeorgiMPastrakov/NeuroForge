@@ -6,7 +6,7 @@ The goal is to build tensors, matrix operations, neural network layers, loss fun
 
 ## Current Status
 
-Phase 6 Data, Metrics, and Serialization is implemented.
+Phase 7 NeuroForge Visual Lab is implemented.
 
 Implemented:
 
@@ -50,10 +50,12 @@ Implemented:
 - MSE, MAE, accuracy, and binary accuracy metrics
 - Sequential model save/load
 - CSV regression example
+- optional NeuroForge Visual Lab
+- model, loss, tensor, gradient, dataset, and decision boundary views
 
 Not implemented yet:
 
-- visualization
+- release polish
 
 ## Build
 
@@ -76,6 +78,14 @@ Run the CSV regression demo:
 ```
 
 The regression demo saves a trained model to `build/neuroforge_linear_regression_model.txt`.
+
+Build and run NeuroForge Visual Lab:
+
+```bash
+cmake -S . -B build-visual -DNEUROFORGE_BUILD_VISUALIZER=ON
+cmake --build build-visual
+./build-visual/tools/visual_lab/neuroforge_visual_lab
+```
 
 ## Public Include
 
@@ -112,13 +122,12 @@ int main() {
 
 ## Roadmap
 
-The next phase is NeuroForge Visual Lab:
+The next phase is Polish and Release:
 
-- optional GUI dashboard
-- model architecture view
-- loss curve
-- tensor and gradient inspection
-- dataset scatter plots
+- architecture docs
+- examples cleanup
+- final validation checklist
+- release notes
 
 ## Autograd Support
 

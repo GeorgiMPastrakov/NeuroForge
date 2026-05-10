@@ -26,6 +26,7 @@
 #include "neuroforge/training/Trainer.hpp"
 #include "neuroforge/training/TrainingConfig.hpp"
 #include "neuroforge/training/TrainingHistory.hpp"
+#include "neuroforge/visualization/VisualizationData.hpp"
 
 namespace neuroforge {
 }
