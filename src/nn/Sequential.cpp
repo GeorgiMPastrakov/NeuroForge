@@ -79,4 +79,8 @@ size_t Sequential::size() const {
     return modules_.size();
 }
 
+const std::vector<std::shared_ptr<Module>>& Sequential::layers() const {
+    return modules_;
+}
+
 }

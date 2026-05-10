@@ -6,7 +6,7 @@ The goal is to build tensors, matrix operations, neural network layers, loss fun
 
 ## Current Status
 
-Phase 5 Autograd is implemented.
+Phase 6 Data, Metrics, and Serialization is implemented.
 
 Implemented:
 
@@ -43,11 +43,16 @@ Implemented:
 - MSE autograd path
 - parameter gradient sync
 - `Trainer::fitAutograd`
+- `Dataset`
+- `CSVDataset`
+- `DataLoader`
+- `TrainTestSplitter`
+- MSE, MAE, accuracy, and binary accuracy metrics
+- Sequential model save/load
+- CSV regression example
 
 Not implemented yet:
 
-- data loading
-- serialization
 - visualization
 
 ## Build
@@ -63,6 +68,14 @@ Run the XOR demo:
 ```bash
 ./build/examples/neuroforge_xor
 ```
+
+Run the CSV regression demo:
+
+```bash
+./build/examples/neuroforge_linear_regression
+```
+
+The regression demo saves a trained model to `build/neuroforge_linear_regression_model.txt`.
 
 ## Public Include
 
@@ -99,12 +112,13 @@ int main() {
 
 ## Roadmap
 
-The next phase is Data, Metrics, and Serialization:
+The next phase is NeuroForge Visual Lab:
 
-- numeric CSV loading
-- batches and train/test splitting
-- MSE, MAE, and binary accuracy metrics
-- model save/load
+- optional GUI dashboard
+- model architecture view
+- loss curve
+- tensor and gradient inspection
+- dataset scatter plots
 
 ## Autograd Support
 

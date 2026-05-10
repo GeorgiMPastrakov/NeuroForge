@@ -1,3 +1,7 @@
 add_executable(neuroforge_xor xor.cpp)
 
 target_link_libraries(neuroforge_xor PRIVATE neuroforge)
+
+add_executable(neuroforge_linear_regression linear_regression.cpp)
+
+target_link_libraries(neuroforge_linear_regression PRIVATE neuroforge)

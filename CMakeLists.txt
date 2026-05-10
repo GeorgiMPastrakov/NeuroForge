@@ -13,11 +13,18 @@ add_library(neuroforge STATIC
     src/nn/Sigmoid.cpp
     src/nn/Tanh.cpp
     src/optim/SGD.cpp
+    src/serialization/ModelLoader.cpp
+    src/serialization/ModelSaver.cpp
     src/training/Trainer.cpp
     src/training/TrainingHistory.cpp
     src/core/Random.cpp
     src/core/Shape.cpp
     src/core/Tensor.cpp
+    src/data/CSVDataset.cpp
+    src/data/DataLoader.cpp
+    src/data/Dataset.cpp
+    src/data/TrainTestSplitter.cpp
+    src/metrics/Metrics.cpp
 )
 
 target_compile_features(neuroforge PUBLIC cxx_std_20)

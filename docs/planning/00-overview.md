@@ -2,7 +2,7 @@
 
 ## Current State
 
-The repository has completed Phases 1 through 4 and is implementing Phase 5 on `autograd-engine`.
+The repository has completed Phases 1 through 6 and is ready for Phase 7 visualization work.
 
 Implemented so far:
 
@@ -13,6 +13,11 @@ Implemented so far:
 - scalar `Value` autograd
 - Tensor autograd metadata and operation gradients
 - autograd-backed MSE, parameter sync, and `Trainer::fitAutograd`
+- dataset and CSV loading
+- deterministic batching and train/test splitting
+- evaluation metrics
+- Sequential model save/load
+- CSV regression demo
 
 ## Target
 
