@@ -18,7 +18,7 @@
 VisualApp::VisualApp()
     : dataset_(neuroforge::Tensor::fromVector({{0.0, 0.0}}), neuroforge::Tensor::fromVector({{0.0}})),
       prediction_(neuroforge::Tensor::fromVector({0.0})),
-      decision_grid_(neuroforge::DecisionBoundaryGrid{2, 2, {}, {}, {}}) {
+      decision_grid_(neuroforge::DecisionBoundaryGrid{2, 2, true, "", {}, {}, {}, {}, 2}) {
     buildDemoState();
 }
 
@@ -114,6 +114,7 @@ void VisualApp::buildDemoState() {
 
 void VisualApp::refreshSnapshots() {
     model_snapshot_ = neuroforge::buildModelSnapshot(model_);
+    network_graph_ = neuroforge::buildNetworkGraphSnapshot(model_, 12);
     loss_snapshot_ = neuroforge::buildLossHistorySnapshot(history_);
     gradient_snapshots_ = neuroforge::buildGradientSnapshots(model_, 12);
     decision_grid_ = neuroforge::buildDecisionBoundaryGrid(model_, -0.25, 1.25, -0.25, 1.25, 30, 30);
@@ -137,7 +138,7 @@ void VisualApp::drawFrame() {
     ImGui::Separator();
     ImGui::Columns(3, "dashboard_columns", true);
 
-    visual_lab::drawModelGraphView(model_snapshot_);
+    visual_lab::drawModelGraphView(network_graph_, model_snapshot_);
 
     ImGui::NextColumn();
     visual_lab::drawLossPlotView(loss_snapshot_);

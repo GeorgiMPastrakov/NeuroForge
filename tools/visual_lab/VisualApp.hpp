@@ -16,6 +16,7 @@ private:
     neuroforge::Dataset dataset_;
     neuroforge::TrainingHistory history_;
     neuroforge::ModelSnapshot model_snapshot_;
+    neuroforge::NetworkGraphSnapshot network_graph_;
     neuroforge::LossHistorySnapshot loss_snapshot_;
     neuroforge::Tensor prediction_;
     std::vector<neuroforge::TensorSnapshot> tensor_snapshots_;
