@@ -15,6 +15,8 @@ add_library(neuroforge STATIC
     src/nn/Sequential.cpp
     src/nn/Sigmoid.cpp
     src/nn/Tanh.cpp
+    src/optim/Adam.cpp
+    src/optim/MomentumSGD.cpp
     src/optim/SGD.cpp
     src/serialization/ModelLoader.cpp
     src/serialization/ModelSaver.cpp

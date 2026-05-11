@@ -22,6 +22,8 @@
 #include "neuroforge/nn/Sequential.hpp"
 #include "neuroforge/nn/Sigmoid.hpp"
 #include "neuroforge/nn/Tanh.hpp"
+#include "neuroforge/optim/Adam.hpp"
+#include "neuroforge/optim/MomentumSGD.hpp"
 #include "neuroforge/optim/Optimizer.hpp"
 #include "neuroforge/optim/SGD.hpp"
 #include "neuroforge/serialization/ModelLoader.hpp"
