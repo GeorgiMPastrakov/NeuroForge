@@ -2,7 +2,7 @@
 
 ## Current State
 
-The repository has completed Phases 1 through 7 and is ready for Phase 8 polish and release work.
+The repository has completed Phases 1 through 8 and is ready for optional post-release feature phases.
 
 Implemented so far:
 
@@ -20,6 +20,7 @@ Implemented so far:
 - CSV regression demo
 - optional NeuroForge Visual Lab
 - model architecture, loss, tensor, gradient, dataset, and decision boundary views
+- final documentation, validation docs, and release notes
 
 ## Target
 
@@ -37,6 +38,8 @@ NeuroForge should become a small CPU-only C++ machine learning framework inspire
 | 6 | `data-metrics-serialization` | CSV, dataloader, metrics, save/load | regression demo |
 | 7 | `visual-lab` | optional GUI dashboard | visual MVP |
 | 8 | `polish-release` | docs, examples, cleanup, final checks | release |
+| 9 | `model-features` | more losses, optimizers, dense model features | richer dense ML |
+| 10 | `general-visual-lab` | generic model/dataset Visual Lab and neuron graph | broader demos |
 
 ## Dependency Graph
 
@@ -49,6 +52,8 @@ Phase 1 Skeleton
         -> Phase 6 Data + Metrics + Serialization
           -> Phase 7 Visualization
             -> Phase 8 Polish + Release
+              -> Phase 9 Expanded Model Features
+                -> Phase 10 General Visual Lab
 ```
 
 ## MVP Definition
@@ -79,6 +84,26 @@ The finished project should also include:
 - Visual Lab with architecture, loss, gradient, tensor, dataset, and decision boundary views
 - clear README and architecture docs
 - final reproducible validation commands
+
+## Post-Release Direction
+
+Phase 9 expands dense-network capabilities:
+
+- MAE and BCE losses
+- MomentumSGD and Adam
+- LeakyReLU, Softmax, and CrossEntropyLoss
+- DataLoader-aware Trainer overloads
+- train/eval mode for Dropout and BatchNorm1d if included
+
+Phase 10 generalizes Visual Lab:
+
+- load supported saved `Sequential` models
+- load numeric CSV datasets
+- train supported dense models from the GUI
+- render dense networks as visual neuron graphs with connections
+- keep text summaries as supporting detail only
+
+CNN support is not part of Phase 9 or Phase 10. It should be treated as a later major architecture phase because it requires N-D Tensor and convolution backward support.
 
 ## Non-Negotiable Rules
 
