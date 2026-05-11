@@ -4,10 +4,13 @@
 #include "neuroforge/nn/ReLU.hpp"
 #include "neuroforge/nn/Sequential.hpp"
 #include "neuroforge/nn/Softmax.hpp"
+#include "neuroforge/serialization/ModelSaver.hpp"
 #include "neuroforge/training/TrainingHistory.hpp"
 
 #include <cassert>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <memory>
 #include <stdexcept>
 
@@ -186,6 +189,37 @@ int main() {
     assert(!session.status().empty());
     assert(!session.loadModel("missing_visual_session_model.txt"));
     assert(session.status().find("Error:") == 0);
+
+    Sequential saved_model;
+    saved_model.add(std::make_shared<Linear>(2, 2));
+    std::filesystem::path model_path = std::filesystem::temp_directory_path() / "neuroforge_visual_session_model.txt";
+    ModelSaver::save(saved_model, model_path.string());
+    assert(session.loadModel(model_path.string()));
+    assert(session.hasModel());
+
+    std::filesystem::path csv_path = std::filesystem::temp_directory_path() / "neuroforge_visual_session.csv";
+    {
+        std::ofstream file(csv_path);
+        file << "x0,x1,label\n";
+        file << "0,0,0\n";
+        file << "1,0,1\n";
+        file << "0,1,1\n";
+        file << "1,1,0\n";
+    }
+    assert(session.loadCsvDataset(csv_path.string(), 2, true));
+    assert(session.hasDataset());
+    assert(!session.loadCsvDataset(csv_path.string(), 9, true));
+    assert(session.loadCsvDataset(csv_path.string(), 2, true));
+
+    VisualTrainingConfig train_config;
+    train_config.epochs = 2;
+    train_config.learning_rate = 0.01;
+    train_config.loss = VisualLossType::CrossEntropy;
+    train_config.optimizer = VisualOptimizerType::Adam;
+    train_config.class_count = 2;
+    assert(session.trainCurrent(train_config));
+    assert(!session.history().losses().empty());
+    assert(session.predictions().has_value());
 
     return 0;
 }
