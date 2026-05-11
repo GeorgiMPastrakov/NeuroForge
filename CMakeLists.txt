@@ -33,6 +33,7 @@ add_library(neuroforge STATIC
     src/data/Dataset.cpp
     src/data/TrainTestSplitter.cpp
     src/metrics/Metrics.cpp
+    src/visualization/VisualSession.cpp
     src/visualization/VisualizationData.cpp
 )
 

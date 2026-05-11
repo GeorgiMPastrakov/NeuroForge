@@ -42,5 +42,7 @@ Expected release state:
 - dense classification reaches perfect accuracy on its deterministic demo dataset
 - regression demo saves `build/neuroforge_linear_regression_model.txt`
 - optional visualizer builds
+- Visual Lab can load supported `Sequential` models and numeric CSV datasets
+- Visual Lab training controls support MSE, BCE, CrossEntropy, SGD, and Adam
 - no build artifacts are committed
 - no duplicate `* 2.*` files are present in tracked source folders

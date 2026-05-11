@@ -3,41 +3,45 @@
 #include "imgui.h"
 #include "implot.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
 namespace visual_lab {
 
-void drawDatasetScatterView(const neuroforge::Dataset& dataset) {
+void drawDatasetScatterView(const neuroforge::DatasetSnapshot& snapshot) {
     ImGui::TextUnformatted("Dataset");
 
-    if (dataset.features().shape().cols() != 2 || dataset.labels().shape().cols() != 1) {
-        ImGui::TextUnformatted("Scatter view requires 2D features and single labels");
+    if (!snapshot.supported) {
+        ImGui::TextUnformatted(snapshot.message.c_str());
         return;
     }
 
-    std::vector<double> x0;
-    std::vector<double> y0;
-    std::vector<double> x1;
-    std::vector<double> y1;
+    if (snapshot.points.empty()) {
+        ImGui::TextUnformatted("No dataset loaded");
+        return;
+    }
 
-    for (size_t row = 0; row < dataset.size(); ++row) {
-        if (dataset.labels().at(row, 0) >= 0.5) {
-            x1.push_back(dataset.features().at(row, 0));
-            y1.push_back(dataset.features().at(row, 1));
-        } else {
-            x0.push_back(dataset.features().at(row, 0));
-            y0.push_back(dataset.features().at(row, 1));
-        }
+    const size_t class_count = std::max<size_t>(snapshot.class_count, 1);
+    std::vector<std::vector<double>> x(class_count);
+    std::vector<std::vector<double>> y(class_count);
+
+    for (const neuroforge::DatasetPointSnapshot& point : snapshot.points) {
+        const size_t index = std::min(point.class_index, class_count - 1);
+        x[index].push_back(point.x);
+        y[index].push_back(point.y);
     }
 
     if (ImPlot::BeginPlot("Dataset Scatter", ImVec2(-1, 260))) {
         ImPlot::SetupAxes("x0", "x1");
-        if (!x0.empty()) {
-            ImPlot::PlotScatter("class 0", x0.data(), y0.data(), static_cast<int>(x0.size()));
+
+        for (size_t index = 0; index < class_count; ++index) {
+            if (!x[index].empty()) {
+                const std::string label = "class " + std::to_string(index);
+                ImPlot::PlotScatter(label.c_str(), x[index].data(), y[index].data(), static_cast<int>(x[index].size()));
+            }
         }
-        if (!x1.empty()) {
-            ImPlot::PlotScatter("class 1", x1.data(), y1.data(), static_cast<int>(x1.size()));
-        }
+
         ImPlot::EndPlot();
     }
 }

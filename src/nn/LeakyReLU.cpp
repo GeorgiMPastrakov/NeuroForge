@@ -42,4 +42,8 @@ std::string LeakyReLU::name() const {
     return stream.str();
 }
 
+double LeakyReLU::negativeSlope() const {
+    return negative_slope_;
+}
+
 }

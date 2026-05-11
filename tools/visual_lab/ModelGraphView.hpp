@@ -4,6 +4,6 @@
 
 namespace visual_lab {
 
-void drawModelGraphView(const neuroforge::ModelSnapshot& snapshot);
+void drawModelGraphView(const neuroforge::NetworkGraphSnapshot& graph, const neuroforge::ModelSnapshot& snapshot);
 
 }

@@ -52,4 +52,12 @@ std::string Dropout::name() const {
     return stream.str();
 }
 
+double Dropout::probability() const {
+    return probability_;
+}
+
+uint32_t Dropout::seed() const {
+    return seed_;
+}
+
 }

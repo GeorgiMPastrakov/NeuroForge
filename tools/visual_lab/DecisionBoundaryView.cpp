@@ -3,6 +3,8 @@
 #include "imgui.h"
 #include "implot.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
 namespace visual_lab {
@@ -10,37 +12,39 @@ namespace visual_lab {
 void drawDecisionBoundaryView(const neuroforge::DecisionBoundaryGrid& grid) {
     ImGui::TextUnformatted("Decision Boundary");
 
-    if (grid.predictions.empty()) {
+    if (!grid.supported) {
+        ImGui::TextUnformatted(grid.message.c_str());
+        return;
+    }
+
+    if (grid.classes.empty()) {
         ImGui::TextUnformatted("No decision data");
         return;
     }
 
-    std::vector<double> low_x;
-    std::vector<double> low_y;
-    std::vector<double> high_x;
-    std::vector<double> high_y;
+    const size_t class_count = std::max<size_t>(grid.class_count, 1);
+    std::vector<std::vector<double>> x(class_count);
+    std::vector<std::vector<double>> y(class_count);
 
     for (size_t row = 0; row < grid.rows; ++row) {
         for (size_t col = 0; col < grid.cols; ++col) {
             const size_t index = row * grid.cols + col;
-            if (grid.predictions[index] >= 0.5) {
-                high_x.push_back(grid.x_values[col]);
-                high_y.push_back(grid.y_values[row]);
-            } else {
-                low_x.push_back(grid.x_values[col]);
-                low_y.push_back(grid.y_values[row]);
-            }
+            const size_t class_index = std::min(grid.classes[index], class_count - 1);
+            x[class_index].push_back(grid.x_values[col]);
+            y[class_index].push_back(grid.y_values[row]);
         }
     }
 
     if (ImPlot::BeginPlot("Decision Regions", ImVec2(-1, 260))) {
         ImPlot::SetupAxes("x0", "x1");
-        if (!low_x.empty()) {
-            ImPlot::PlotScatter("predict 0", low_x.data(), low_y.data(), static_cast<int>(low_x.size()));
+
+        for (size_t index = 0; index < class_count; ++index) {
+            if (!x[index].empty()) {
+                const std::string label = "predict " + std::to_string(index);
+                ImPlot::PlotScatter(label.c_str(), x[index].data(), y[index].data(), static_cast<int>(x[index].size()));
+            }
         }
-        if (!high_x.empty()) {
-            ImPlot::PlotScatter("predict 1", high_x.data(), high_y.data(), static_cast<int>(high_x.size()));
-        }
+
         ImPlot::EndPlot();
     }
 }

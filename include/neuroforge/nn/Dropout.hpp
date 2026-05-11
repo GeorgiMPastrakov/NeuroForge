@@ -16,6 +16,8 @@ public:
     Tensor forward(const Tensor& input) override;
     Tensor backward(const Tensor& grad_output) override;
     std::string name() const override;
+    double probability() const;
+    uint32_t seed() const;
 
 private:
     double probability_;

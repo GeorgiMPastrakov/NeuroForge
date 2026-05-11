@@ -39,9 +39,8 @@ Loaded models should produce the same predictions as the saved model for the sup
 
 Serialization does not support:
 
-- arbitrary custom modules
-- `LeakyReLU`, `Softmax`, or `Dropout`
 - optimizer state
+- arbitrary custom modules
 - training history
 - binary checkpoints
 - versioned migration

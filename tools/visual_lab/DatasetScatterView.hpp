@@ -1,9 +1,9 @@
 #pragma once
 
-#include "neuroforge/data/Dataset.hpp"
+#include "neuroforge/visualization/VisualizationData.hpp"
 
 namespace visual_lab {
 
-void drawDatasetScatterView(const neuroforge::Dataset& dataset);
+void drawDatasetScatterView(const neuroforge::DatasetSnapshot& snapshot);
 
 }
