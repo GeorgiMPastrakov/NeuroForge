@@ -16,8 +16,14 @@ public:
     virtual void zero_grad();
     virtual void enableAutograd();
     virtual void syncAutogradGradients();
+    virtual void train();
+    virtual void eval();
+    bool isTraining() const;
     virtual std::string name() const = 0;
     virtual ~Module() = default;
+
+protected:
+    bool training_ = true;
 };
 
 }

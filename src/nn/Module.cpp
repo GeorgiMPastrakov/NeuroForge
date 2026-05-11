@@ -24,4 +24,16 @@ void Module::syncAutogradGradients() {
     }
 }
 
+void Module::train() {
+    training_ = true;
+}
+
+void Module::eval() {
+    training_ = false;
+}
+
+bool Module::isTraining() const {
+    return training_;
+}
+
 }
