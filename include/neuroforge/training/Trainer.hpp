@@ -1,6 +1,7 @@
 #pragma once
 
 #include "neuroforge/core/Tensor.hpp"
+#include "neuroforge/data/DataLoader.hpp"
 #include "neuroforge/losses/LossFunction.hpp"
 #include "neuroforge/nn/Module.hpp"
 #include "neuroforge/optim/Optimizer.hpp"
@@ -15,7 +16,10 @@ public:
 
     TrainingHistory fit(const Tensor& input, const Tensor& target, const TrainingConfig& config);
     TrainingHistory fitAutograd(const Tensor& input, const Tensor& target, const TrainingConfig& config);
+    TrainingHistory fit(const DataLoader& data_loader, const TrainingConfig& config);
+    TrainingHistory fitAutograd(const DataLoader& data_loader, const TrainingConfig& config);
     double evaluateLoss(const Tensor& input, const Tensor& target);
+    double evaluateLoss(const DataLoader& data_loader);
 
 private:
     Module& model_;

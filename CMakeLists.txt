@@ -4,14 +4,22 @@ project(NeuroForge VERSION 0.1.0 LANGUAGES CXX)
 
 add_library(neuroforge STATIC
     src/autograd/Value.cpp
+    src/losses/BinaryCrossEntropyLoss.cpp
+    src/losses/CrossEntropyLoss.cpp
+    src/losses/MAELoss.cpp
     src/losses/MSELoss.cpp
+    src/nn/Dropout.cpp
+    src/nn/LeakyReLU.cpp
     src/nn/Linear.cpp
     src/nn/Module.cpp
     src/nn/Parameter.cpp
     src/nn/ReLU.cpp
     src/nn/Sequential.cpp
     src/nn/Sigmoid.cpp
+    src/nn/Softmax.cpp
     src/nn/Tanh.cpp
+    src/optim/Adam.cpp
+    src/optim/MomentumSGD.cpp
     src/optim/SGD.cpp
     src/serialization/ModelLoader.cpp
     src/serialization/ModelSaver.cpp

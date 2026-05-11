@@ -38,11 +38,19 @@ Tensor autograd supports the operations needed by the current framework:
 - row-vector bias addition
 - sum
 - mean
+- absolute value
+- logarithm
+- clamp
 - power
 - ReLU
+- LeakyReLU
+- row-wise softmax
 - sigmoid
 - tanh
 - MSE loss
+- MAE loss
+- binary cross entropy loss
+- cross entropy loss
 
 `Tensor::backward()` requires a scalar tensor.
 

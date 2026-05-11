@@ -5,3 +5,7 @@ target_link_libraries(neuroforge_xor PRIVATE neuroforge)
 add_executable(neuroforge_linear_regression linear_regression.cpp)
 
 target_link_libraries(neuroforge_linear_regression PRIVATE neuroforge)
+
+add_executable(neuroforge_dense_classification dense_classification.cpp)
+
+target_link_libraries(neuroforge_dense_classification PRIVATE neuroforge)

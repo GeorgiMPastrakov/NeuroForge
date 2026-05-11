@@ -15,6 +15,8 @@ public:
     Tensor forward(const Tensor& input) override;
     Tensor backward(const Tensor& grad_output) override;
     std::vector<Parameter*> parameters() override;
+    void train() override;
+    void eval() override;
     std::string name() const override;
     std::string summary() const;
     size_t size() const;

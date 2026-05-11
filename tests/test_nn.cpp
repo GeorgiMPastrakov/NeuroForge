@@ -1,9 +1,12 @@
 #include "neuroforge/nn/Module.hpp"
 #include "neuroforge/nn/Parameter.hpp"
+#include "neuroforge/nn/Dropout.hpp"
+#include "neuroforge/nn/LeakyReLU.hpp"
 #include "neuroforge/nn/Linear.hpp"
 #include "neuroforge/nn/ReLU.hpp"
 #include "neuroforge/nn/Sequential.hpp"
 #include "neuroforge/nn/Sigmoid.hpp"
+#include "neuroforge/nn/Softmax.hpp"
 #include "neuroforge/nn/Tanh.hpp"
 
 #include <cassert>
@@ -88,6 +91,11 @@ int main() {
     assert(module.parameters().empty());
     module.zero_grad();
     assert(module.name() == "EmptyModule");
+    assert(module.isTraining());
+    module.eval();
+    assert(!module.isTraining());
+    module.train();
+    assert(module.isTraining());
 
     Linear linear(2, 3);
     assert(linear.inFeatures() == 2);
@@ -182,9 +190,71 @@ int main() {
     Tensor tanh_grad = tanh_module.backward(activation_grad);
     assert(near(tanh_grad.at(1), 3.0));
 
+    LeakyReLU leaky_relu_module(0.1);
+    Tensor leaky_relu_output = leaky_relu_module.forward(activation_input);
+    assert(leaky_relu_module.name() == "LeakyReLU(0.1)");
+    assert(leaky_relu_module.parameters().empty());
+    assert(near(leaky_relu_output.at(0), -0.1));
+    assert(near(leaky_relu_output.at(2), 1.0));
+    Tensor leaky_relu_grad = leaky_relu_module.backward(activation_grad);
+    assert(near(leaky_relu_grad.at(0), 0.2));
+    assert(near(leaky_relu_grad.at(1), 0.3));
+    assert(near(leaky_relu_grad.at(2), 4.0));
+
+    Softmax softmax_module;
+    Tensor softmax_input = Tensor::fromVector({
+        {1.0, 2.0},
+        {3.0, 3.0}
+    });
+    Tensor softmax_output = softmax_module.forward(softmax_input);
+    assert(softmax_module.name() == "Softmax()");
+    assert(near(softmax_output.at(0, 0) + softmax_output.at(0, 1), 1.0));
+    assert(near(softmax_output.at(1, 0), 0.5));
+    Tensor softmax_grad = softmax_module.backward(Tensor::fromVector({
+        {3.0, 5.0},
+        {1.0, 1.0}
+    }));
+    const double s0 = softmax_output.at(0, 0);
+    const double s1 = softmax_output.at(0, 1);
+    const double weighted = 3.0 * s0 + 5.0 * s1;
+    assert(near(softmax_grad.at(0, 0), s0 * (3.0 - weighted)));
+    assert(near(softmax_grad.at(0, 1), s1 * (5.0 - weighted)));
+    assert(near(softmax_grad.at(1, 0), 0.0));
+    assert(near(softmax_grad.at(1, 1), 0.0));
+
+    Dropout dropout_module(0.5, 42);
+    Tensor dropout_input = Tensor::ones(Shape({4}));
+    Tensor dropout_output = dropout_module.forward(dropout_input);
+    size_t dropped = 0;
+    size_t kept = 0;
+
+    for (double value : dropout_output.data()) {
+        if (near(value, 0.0)) {
+            ++dropped;
+        } else if (near(value, 2.0)) {
+            ++kept;
+        }
+    }
+
+    assert(dropped + kept == dropout_output.size());
+    Tensor dropout_grad = dropout_module.backward(Tensor::ones(Shape({4})));
+    assert(dropout_grad.data() == dropout_output.data());
+    dropout_module.eval();
+    Tensor dropout_eval_output = dropout_module.forward(dropout_input);
+    assert(dropout_eval_output.data() == dropout_input.data());
+    Tensor dropout_eval_grad = dropout_module.backward(Tensor::ones(Shape({4})));
+    assert(dropout_eval_grad.data() == Tensor::ones(Shape({4})).data());
+
     expectThrows<std::invalid_argument>([] { ReLU().backward(Tensor::fromVector({1.0})); });
     expectThrows<std::invalid_argument>([] { Sigmoid().backward(Tensor::fromVector({1.0})); });
     expectThrows<std::invalid_argument>([] { Tanh().backward(Tensor::fromVector({1.0})); });
+    expectThrows<std::invalid_argument>([] { LeakyReLU().backward(Tensor::fromVector({1.0})); });
+    expectThrows<std::invalid_argument>([] { Softmax().backward(Tensor::fromVector({1.0})); });
+    expectThrows<std::invalid_argument>([] { Dropout(1.0); });
+    expectThrows<std::invalid_argument>([] {
+        Dropout dropout(0.5);
+        dropout.backward(Tensor::fromVector({1.0}));
+    });
     expectThrows<std::invalid_argument>([] {
         ReLU relu;
         relu.forward(Tensor::fromVector({1.0}));
@@ -199,6 +269,17 @@ int main() {
     assert(sequential.name() == "Sequential");
     assert(sequential.size() == 4);
     assert(sequential.parameters().size() == 4);
+    assert(sequential.isTraining());
+    sequential.eval();
+    assert(!sequential.isTraining());
+    for (const auto& layer : sequential.layers()) {
+        assert(!layer->isTraining());
+    }
+    sequential.train();
+    assert(sequential.isTraining());
+    for (const auto& layer : sequential.layers()) {
+        assert(layer->isTraining());
+    }
     Tensor sequential_output = sequential.forward(Tensor::fromVector({
         {0.0, 0.0},
         {0.0, 1.0},

@@ -44,6 +44,22 @@ std::vector<Parameter*> Sequential::parameters() {
     return result;
 }
 
+void Sequential::train() {
+    Module::train();
+
+    for (const auto& module : modules_) {
+        module->train();
+    }
+}
+
+void Sequential::eval() {
+    Module::eval();
+
+    for (const auto& module : modules_) {
+        module->eval();
+    }
+}
+
 std::string Sequential::name() const {
     return "Sequential";
 }

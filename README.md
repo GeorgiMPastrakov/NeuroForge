@@ -8,15 +8,15 @@ The goal is to show how a CPU-only ML framework works internally.
 
 | Area | Implemented |
 | --- | --- |
-| Core math | `Shape`, `Tensor`, indexing, factories, element-wise ops, transpose, matmul, reductions, activations |
+| Core math | `Shape`, `Tensor`, indexing, factories, element-wise ops, transpose, matmul, reductions, activations, row softmax |
 | Autograd | scalar `Value`, Tensor autograd for supported ops, `loss.backward()` path |
-| Neural networks | `Parameter`, `Module`, `Linear`, `ReLU`, `Sigmoid`, `Tanh`, `Sequential` |
-| Loss and optimization | `MSELoss`, `SGD` |
-| Training | manual training, autograd training, loss history, evaluation loss |
+| Neural networks | `Parameter`, `Module`, `Linear`, `ReLU`, `LeakyReLU`, `Sigmoid`, `Tanh`, `Softmax`, `Dropout`, `Sequential` |
+| Loss and optimization | `MSELoss`, `MAELoss`, `BinaryCrossEntropyLoss`, `CrossEntropyLoss`, `SGD`, `MomentumSGD`, `Adam` |
+| Training | manual training, autograd training, DataLoader batch training, loss history, evaluation loss |
 | Data | numeric CSV loading, datasets, batches, train/test split |
 | Metrics | MSE, MAE, accuracy, binary accuracy |
 | Serialization | save/load for supported `Sequential` models |
-| Examples | XOR classifier, CSV regression |
+| Examples | XOR classifier, CSV regression, dense classification |
 | Visualization | optional NeuroForge Visual Lab with model, loss, tensor, gradient, dataset, and decision boundary views |
 
 ## Build And Test
@@ -101,6 +101,12 @@ Run CSV regression:
 ./build/examples/neuroforge_linear_regression
 ```
 
+Run dense classification:
+
+```bash
+./build/examples/neuroforge_dense_classification
+```
+
 The regression demo saves a trained model to:
 
 ```text
@@ -157,4 +163,5 @@ NeuroForge is not:
 - Broadcasting is intentionally limited.
 - Autograd supports only the implemented operation set.
 - Serialization supports the current `Sequential` layer set only.
+- Serialization does not yet support `LeakyReLU`, `Softmax`, or `Dropout`.
 - Visual Lab is an inspection demo, not a full experiment manager.

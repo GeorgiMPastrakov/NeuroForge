@@ -115,6 +115,40 @@ int main() {
     assert(near(tensor_pow_input.grad()[0], 12.0));
     assert(near(tensor_pow_input.grad()[1], 27.0));
 
+    Tensor abs_input(std::vector<double>{-2.0, 0.0, 3.0}, Shape({3}), true);
+    abs_input.abs().sum().backward();
+    assert(near(abs_input.grad()[0], -1.0));
+    assert(near(abs_input.grad()[1], 0.0));
+    assert(near(abs_input.grad()[2], 1.0));
+
+    Tensor log_input(std::vector<double>{2.0, 4.0}, Shape({2}), true);
+    log_input.log().sum().backward();
+    assert(near(log_input.grad()[0], 0.5));
+    assert(near(log_input.grad()[1], 0.25));
+
+    Tensor clamp_input(std::vector<double>{-1.0, 0.5, 2.0}, Shape({3}), true);
+    clamp_input.clamp(0.0, 1.0).sum().backward();
+    assert(near(clamp_input.grad()[0], 0.0));
+    assert(near(clamp_input.grad()[1], 1.0));
+    assert(near(clamp_input.grad()[2], 0.0));
+
+    Tensor leaky_relu_input(std::vector<double>{-2.0, 0.0, 3.0}, Shape({3}), true);
+    leaky_relu_input.leakyRelu(0.1).sum().backward();
+    assert(near(leaky_relu_input.grad()[0], 0.1));
+    assert(near(leaky_relu_input.grad()[1], 0.1));
+    assert(near(leaky_relu_input.grad()[2], 1.0));
+
+    Tensor softmax_input(std::vector<double>{1.0, 2.0}, Shape({1, 2}), true);
+    Tensor softmax_weights = Tensor::fromVector({
+        {3.0, 5.0}
+    });
+    softmax_input.softmaxRows().multiply(softmax_weights).sum().backward();
+    const double s0 = std::exp(1.0) / (std::exp(1.0) + std::exp(2.0));
+    const double s1 = std::exp(2.0) / (std::exp(1.0) + std::exp(2.0));
+    const double weighted = 3.0 * s0 + 5.0 * s1;
+    assert(near(softmax_input.grad()[0], s0 * (3.0 - weighted)));
+    assert(near(softmax_input.grad()[1], s1 * (5.0 - weighted)));
+
     Tensor matmul_left(std::vector<double>{1.0, 2.0, 3.0, 4.0}, Shape({2, 2}), true);
     Tensor matmul_right(std::vector<double>{5.0, 6.0}, Shape({2, 1}), true);
     matmul_left.matmul(matmul_right).sum().backward();

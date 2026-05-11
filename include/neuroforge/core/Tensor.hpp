@@ -41,10 +41,15 @@ public:
     Tensor matmul(const Tensor& other) const;
     Tensor addRowVector(const Tensor& row_vector) const;
     Tensor transpose() const;
+    Tensor abs() const;
+    Tensor log() const;
+    Tensor clamp(double min_value, double max_value) const;
     Tensor pow(double exponent) const;
     Tensor relu() const;
+    Tensor leakyRelu(double negative_slope) const;
     Tensor sigmoid() const;
     Tensor tanh() const;
+    Tensor softmaxRows() const;
     Tensor sum() const;
     Tensor mean() const;
     double item() const;

@@ -26,13 +26,13 @@ The NN module owns `Parameter`, `Module`, `Linear`, activations, and `Sequential
 
 ## Losses And Optimizers
 
-`MSELoss` computes scalar mean squared error and supports both manual backward and Tensor autograd.
+Losses compute scalar training objectives and support manual backward. Supported losses are `MSELoss`, `MAELoss`, `BinaryCrossEntropyLoss`, and `CrossEntropyLoss`.
 
-`SGD` updates `Parameter` values from stored gradients. Learning rate belongs to the optimizer.
+Optimizers update `Parameter` values from stored gradients. Supported optimizers are `SGD`, `MomentumSGD`, and `Adam`. Learning rate belongs to the optimizer.
 
 ## Training
 
-`Trainer` connects a model, loss, and optimizer.
+`Trainer` connects a model, loss, optimizer, and optional `DataLoader`.
 
 `fit` uses the manual backward path. `fitAutograd` uses Tensor autograd, then syncs Tensor gradients back into `Parameter` gradients before optimizer update.
 
