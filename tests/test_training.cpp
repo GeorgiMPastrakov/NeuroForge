@@ -2,6 +2,8 @@
 #include "neuroforge/training/TrainingHistory.hpp"
 #include "neuroforge/training/Trainer.hpp"
 #include "neuroforge/core/Random.hpp"
+#include "neuroforge/data/DataLoader.hpp"
+#include "neuroforge/data/Dataset.hpp"
 #include "neuroforge/losses/MSELoss.hpp"
 #include "neuroforge/nn/Linear.hpp"
 #include "neuroforge/nn/Sequential.hpp"
@@ -87,6 +89,72 @@ double trainXor() {
     return history.finalLoss();
 }
 
+double trainRegressionWithDataLoader() {
+    Linear model(1, 1);
+    model.weights().data().at(0, 0) = 0.0;
+    model.bias().data().at(0, 0) = 0.0;
+    MSELoss loss;
+    SGD optimizer(model.parameters(), 0.05);
+    Trainer trainer(model, loss, optimizer);
+    Dataset dataset(
+        Tensor::fromVector({
+            {1.0},
+            {2.0},
+            {3.0},
+            {4.0}
+        }),
+        Tensor::fromVector({
+            {2.0},
+            {4.0},
+            {6.0},
+            {8.0}
+        })
+    );
+    DataLoader loader(dataset, 2, false);
+    double before = trainer.evaluateLoss(loader);
+    TrainingConfig config;
+    config.epochs = 100;
+    TrainingHistory history = trainer.fit(loader, config);
+    double after = trainer.evaluateLoss(loader);
+    assert(history.size() == 100);
+    assert(history.finalLoss() < before);
+    assert(after < before);
+    return after;
+}
+
+double trainRegressionWithAutogradDataLoader() {
+    Linear model(1, 1);
+    model.weights().data().at(0, 0) = 0.0;
+    model.bias().data().at(0, 0) = 0.0;
+    MSELoss loss;
+    SGD optimizer(model.parameters(), 0.05);
+    Trainer trainer(model, loss, optimizer);
+    Dataset dataset(
+        Tensor::fromVector({
+            {1.0},
+            {2.0},
+            {3.0},
+            {4.0}
+        }),
+        Tensor::fromVector({
+            {2.0},
+            {4.0},
+            {6.0},
+            {8.0}
+        })
+    );
+    DataLoader loader(dataset, 2, false);
+    double before = trainer.evaluateLoss(loader);
+    TrainingConfig config;
+    config.epochs = 100;
+    TrainingHistory history = trainer.fitAutograd(loader, config);
+    double after = trainer.evaluateLoss(loader);
+    assert(history.size() == 100);
+    assert(history.finalLoss() < before);
+    assert(after < before);
+    return after;
+}
+
 int main() {
     TrainingConfig config;
     assert(config.epochs == 1000);
@@ -141,6 +209,11 @@ int main() {
     assert(evaluated >= 0.0);
     assert(linear.weights().data().at(0, 0) == weight_after_train);
     assert(linear.bias().data().at(0, 0) == bias_after_train);
+    assert(linear.isTraining());
+    linear.eval();
+    trainer.evaluateLoss(input, target);
+    assert(!linear.isTraining());
+    linear.train();
 
     expectThrows<std::invalid_argument>([&] {
         TrainingConfig invalid;
@@ -150,6 +223,8 @@ int main() {
 
     assert(trainRegression() < 1.0);
     assert(trainXor() < 0.3);
+    assert(trainRegressionWithDataLoader() < 1.0);
+    assert(trainRegressionWithAutogradDataLoader() < 1.0);
 
     return 0;
 }
