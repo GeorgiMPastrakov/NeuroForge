@@ -14,6 +14,7 @@ public:
     Tensor forward(const Tensor& input) override;
     Tensor backward(const Tensor& grad_output) override;
     std::string name() const override;
+    double negativeSlope() const;
 
 private:
     double negative_slope_;

@@ -1,8 +1,11 @@
 #include "neuroforge/serialization/ModelLoader.hpp"
 
+#include "neuroforge/nn/Dropout.hpp"
+#include "neuroforge/nn/LeakyReLU.hpp"
 #include "neuroforge/nn/Linear.hpp"
 #include "neuroforge/nn/ReLU.hpp"
 #include "neuroforge/nn/Sigmoid.hpp"
+#include "neuroforge/nn/Softmax.hpp"
 #include "neuroforge/nn/Tanh.hpp"
 
 #include <fstream>
@@ -105,6 +108,27 @@ Sequential ModelLoader::load(const std::string& path) {
             model.add(std::make_shared<Sigmoid>());
         } else if (token == "Tanh") {
             model.add(std::make_shared<Tanh>());
+        } else if (token == "LeakyReLU") {
+            double negative_slope = 0.0;
+            file >> negative_slope;
+
+            if (!file) {
+                throw std::invalid_argument("ModelLoader invalid LeakyReLU slope.");
+            }
+
+            model.add(std::make_shared<LeakyReLU>(negative_slope));
+        } else if (token == "Softmax") {
+            model.add(std::make_shared<Softmax>());
+        } else if (token == "Dropout") {
+            double probability = 0.0;
+            uint32_t seed = 0;
+            file >> probability >> seed;
+
+            if (!file) {
+                throw std::invalid_argument("ModelLoader invalid Dropout parameters.");
+            }
+
+            model.add(std::make_shared<Dropout>(probability, seed));
         } else {
             throw std::invalid_argument("ModelLoader unsupported layer token: " + token);
         }

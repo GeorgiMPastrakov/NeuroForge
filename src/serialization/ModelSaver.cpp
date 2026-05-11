@@ -1,8 +1,11 @@
 #include "neuroforge/serialization/ModelSaver.hpp"
 
+#include "neuroforge/nn/Dropout.hpp"
+#include "neuroforge/nn/LeakyReLU.hpp"
 #include "neuroforge/nn/Linear.hpp"
 #include "neuroforge/nn/ReLU.hpp"
 #include "neuroforge/nn/Sigmoid.hpp"
+#include "neuroforge/nn/Softmax.hpp"
 #include "neuroforge/nn/Tanh.hpp"
 
 #include <fstream>
@@ -48,6 +51,12 @@ void ModelSaver::save(const Sequential& model, const std::string& path) {
             file << "Sigmoid\n";
         } else if (dynamic_cast<const Tanh*>(module.get())) {
             file << "Tanh\n";
+        } else if (const auto* leaky_relu = dynamic_cast<const LeakyReLU*>(module.get())) {
+            file << "LeakyReLU " << std::setprecision(17) << leaky_relu->negativeSlope() << "\n";
+        } else if (dynamic_cast<const Softmax*>(module.get())) {
+            file << "Softmax\n";
+        } else if (const auto* dropout = dynamic_cast<const Dropout*>(module.get())) {
+            file << "Dropout " << std::setprecision(17) << dropout->probability() << " " << dropout->seed() << "\n";
         } else {
             throw std::invalid_argument("ModelSaver encountered unsupported layer: " + module->name());
         }

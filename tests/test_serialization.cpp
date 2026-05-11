@@ -1,9 +1,12 @@
 #include "neuroforge/serialization/ModelLoader.hpp"
 #include "neuroforge/serialization/ModelSaver.hpp"
+#include "neuroforge/nn/Dropout.hpp"
+#include "neuroforge/nn/LeakyReLU.hpp"
 #include "neuroforge/nn/Linear.hpp"
 #include "neuroforge/nn/ReLU.hpp"
 #include "neuroforge/nn/Sequential.hpp"
 #include "neuroforge/nn/Sigmoid.hpp"
+#include "neuroforge/nn/Softmax.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -89,6 +92,32 @@ int main() {
     expectThrows<std::invalid_argument>([&] {
         ModelLoader::load(malformed_path.string());
     });
+
+    Sequential phase9_model;
+    phase9_model.add(std::make_shared<Linear>(2, 3));
+    phase9_model.add(std::make_shared<LeakyReLU>(0.2));
+    phase9_model.add(std::make_shared<Dropout>(0.25, 17));
+    phase9_model.add(std::make_shared<Linear>(3, 2));
+    phase9_model.add(std::make_shared<Softmax>());
+    phase9_model.eval();
+
+    Tensor phase9_input = Tensor::fromVector({
+        {0.2, -0.4},
+        {1.0, 0.5}
+    });
+    Tensor phase9_before = phase9_model.forward(phase9_input);
+
+    std::filesystem::path phase9_path = std::filesystem::temp_directory_path() / "neuroforge_phase9_model.txt";
+    ModelSaver::save(phase9_model, phase9_path.string());
+    Sequential phase9_loaded = ModelLoader::load(phase9_path.string());
+    phase9_loaded.eval();
+    Tensor phase9_after = phase9_loaded.forward(phase9_input);
+
+    assert(phase9_loaded.size() == 5);
+
+    for (size_t index = 0; index < phase9_before.size(); ++index) {
+        assert(near(phase9_before.data()[index], phase9_after.data()[index]));
+    }
 
     return 0;
 }
