@@ -1,4 +1,5 @@
 #include "neuroforge/visualization/VisualizationData.hpp"
+#include "neuroforge/visualization/VisualSession.hpp"
 #include "neuroforge/nn/Linear.hpp"
 #include "neuroforge/nn/ReLU.hpp"
 #include "neuroforge/nn/Sequential.hpp"
@@ -91,6 +92,15 @@ int main() {
     expectThrows<std::invalid_argument>([&] {
         buildDecisionBoundaryGrid(model, 0.0, 1.0, 0.0, 1.0, 1, 2);
     });
+
+    VisualSession session;
+    assert(session.hasModel());
+    assert(session.hasDataset());
+    assert(session.predictions().has_value());
+    assert(session.predictions()->shape() == Shape({4, 1}));
+    assert(!session.status().empty());
+    assert(!session.loadModel("missing_visual_session_model.txt"));
+    assert(session.status().find("Error:") == 0);
 
     return 0;
 }
