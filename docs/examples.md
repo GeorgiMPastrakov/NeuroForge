@@ -1,6 +1,6 @@
 # Examples
 
-NeuroForge includes two command-line examples and one optional GUI demo.
+NeuroForge includes three command-line examples and one optional GUI demo.
 
 ## XOR
 
@@ -51,6 +51,26 @@ It saves a trained model to:
 ```text
 build/neuroforge_linear_regression_model.txt
 ```
+
+## Dense Classification
+
+Run:
+
+```bash
+./build/examples/neuroforge_dense_classification
+```
+
+The dense classification demo uses:
+
+- hardcoded 2D three-class data
+- one-hot targets
+- `Linear`
+- `LeakyReLU`
+- `CrossEntropyLoss`
+- `Adam`
+- `DataLoader`
+
+It prints initial loss, final loss, accuracy, and class predictions.
 
 ## Visual Lab
 

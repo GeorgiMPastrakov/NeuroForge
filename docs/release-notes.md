@@ -11,19 +11,22 @@ This release completes the current NeuroForge roadmap.
 - element-wise operations
 - matrix multiplication
 - reductions and activations
+- absolute value, logarithm, clamp, LeakyReLU, and row softmax Tensor operations
 - deterministic random initialization
-- neural network modules
+- neural network modules including LeakyReLU, Softmax, and Dropout
 - `Sequential` models
 - manual backward training
 - scalar and Tensor autograd
-- MSE loss
-- SGD optimizer
+- MSE, MAE, BCE, and CrossEntropy losses
+- SGD, MomentumSGD, and Adam optimizers
+- DataLoader-aware Trainer overloads
 - numeric CSV loading
 - batches and train/test split
 - MSE, MAE, accuracy, and binary accuracy metrics
 - Sequential save/load
 - XOR demo
 - CSV regression demo
+- dense classification demo
 - optional Visual Lab
 - planning and final documentation
 
@@ -39,6 +42,7 @@ cmake --build build
 ctest --test-dir build
 ./build/examples/neuroforge_xor
 ./build/examples/neuroforge_linear_regression
+./build/examples/neuroforge_dense_classification
 cmake -S . -B build-visual -DNEUROFORGE_BUILD_VISUALIZER=ON
 cmake --build build-visual
 ```
@@ -51,16 +55,14 @@ cmake --build build-visual
 - no CUDA
 - no external ML backend
 - no arbitrary custom model serialization
+- no serialization support yet for LeakyReLU, Softmax, or Dropout
 - no optimizer checkpointing
 - Visual Lab is a demo inspector, not a full experiment manager
 
 ## Stretch Goals
 
-- Adam
-- binary cross entropy
 - gradient checker
 - broader Tensor operation coverage
-- DataLoader-aware Trainer loops
 - richer Visual Lab controls
 - Graphviz export
 - more demos

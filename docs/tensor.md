@@ -48,10 +48,15 @@ Supported operations:
 - row-vector addition for layer bias handling
 - transpose for rank-2 tensors
 - sum and mean
+- absolute value
+- logarithm
+- clamp
 - power
 - ReLU
+- LeakyReLU
 - sigmoid
 - tanh
+- row-wise softmax for rank-2 tensors
 - scalar extraction with `item`
 
 No general broadcasting exists. Element-wise operations require exact shape matches.

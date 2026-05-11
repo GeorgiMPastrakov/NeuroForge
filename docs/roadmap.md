@@ -20,6 +20,11 @@
 - CSV regression example
 - optional NeuroForge Visual Lab
 - final project documentation
+- MAE, BCE, and CrossEntropy losses
+- MomentumSGD and Adam optimizers
+- LeakyReLU, Softmax, and Dropout
+- DataLoader-aware Trainer overloads
+- dense classification example
 
 ## Current Completion Target
 
@@ -35,22 +40,6 @@ NeuroForge is complete for the current educational roadmap when:
 ## Future Work
 
 Future work should happen only after the current project is stable.
-
-## Phase 9: Expanded Model Features
-
-- Adam optimizer
-- binary cross entropy
-- MAE loss
-- MomentumSGD
-- LeakyReLU
-- Softmax and CrossEntropyLoss for dense classifiers
-- DataLoader integration in `Trainer`
-- train/eval mode
-- Dropout
-- BatchNorm1d
-- one deterministic dense classification example
-
-Phase 9 should stay focused on dense neural networks. CNNs are not included.
 
 ## Phase 10: General Visual Lab
 

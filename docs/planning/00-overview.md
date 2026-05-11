@@ -2,7 +2,7 @@
 
 ## Current State
 
-The repository has completed Phases 1 through 8 and is ready for optional post-release feature phases.
+The repository has completed Phases 1 through 9 and is ready for Phase 10 Visual Lab generalization.
 
 Implemented so far:
 
@@ -21,6 +21,7 @@ Implemented so far:
 - optional NeuroForge Visual Lab
 - model architecture, loss, tensor, gradient, dataset, and decision boundary views
 - final documentation, validation docs, and release notes
+- expanded dense model features including new losses, optimizers, layers, and DataLoader training
 
 ## Target
 
@@ -87,13 +88,13 @@ The finished project should also include:
 
 ## Post-Release Direction
 
-Phase 9 expands dense-network capabilities:
+Phase 9 expanded dense-network capabilities:
 
 - MAE and BCE losses
 - MomentumSGD and Adam
 - LeakyReLU, Softmax, and CrossEntropyLoss
 - DataLoader-aware Trainer overloads
-- train/eval mode for Dropout and BatchNorm1d if included
+- train/eval mode and Dropout
 
 Phase 10 generalizes Visual Lab:
 

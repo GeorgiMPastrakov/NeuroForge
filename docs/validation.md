@@ -13,6 +13,7 @@ Run examples:
 ```bash
 ./build/examples/neuroforge_xor
 ./build/examples/neuroforge_linear_regression
+./build/examples/neuroforge_dense_classification
 ```
 
 Build the optional visualizer:
@@ -38,6 +39,7 @@ Expected release state:
 
 - all tests pass
 - examples run
+- dense classification reaches perfect accuracy on its deterministic demo dataset
 - regression demo saves `build/neuroforge_linear_regression_model.txt`
 - optional visualizer builds
 - no build artifacts are committed
