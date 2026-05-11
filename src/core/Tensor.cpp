@@ -1,5 +1,6 @@
 #include "neuroforge/core/Tensor.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <unordered_set>
@@ -431,6 +432,114 @@ Tensor Tensor::transpose() const {
     return Tensor(std::move(result), Shape({node_->shape.cols(), node_->shape.rows()}));
 }
 
+Tensor Tensor::abs() const {
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : node_->data) {
+        result.push_back(std::fabs(value));
+    }
+
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                double sign = 0.0;
+
+                if (parent->data[index] > 0.0) {
+                    sign = 1.0;
+                } else if (parent->data[index] < 0.0) {
+                    sign = -1.0;
+                }
+
+                parent->backward_grad[index] += current->backward_grad[index] * sign;
+            }
+        };
+    }
+
+    return output;
+}
+
+Tensor Tensor::log() const {
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : node_->data) {
+        if (value <= 0.0) {
+            throw std::invalid_argument("Log requires all tensor values to be positive.");
+        }
+
+        result.push_back(std::log(value));
+    }
+
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                parent->backward_grad[index] += current->backward_grad[index] / parent->data[index];
+            }
+        };
+    }
+
+    return output;
+}
+
+Tensor Tensor::clamp(double min_value, double max_value) const {
+    if (min_value > max_value) {
+        throw std::invalid_argument("Clamp min value must be less than or equal to max value.");
+    }
+
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : node_->data) {
+        result.push_back(std::clamp(value, min_value, max_value));
+    }
+
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent, min_value, max_value] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                const double value = parent->data[index];
+                const double gradient = value >= min_value && value <= max_value ? current->backward_grad[index] : 0.0;
+                parent->backward_grad[index] += gradient;
+            }
+        };
+    }
+
+    return output;
+}
+
 Tensor Tensor::pow(double exponent) const {
     std::vector<double> result;
     result.reserve(size());
@@ -484,6 +593,41 @@ Tensor Tensor::relu() const {
 
             for (size_t index = 0; index < current->backward_grad.size(); ++index) {
                 parent->backward_grad[index] += parent->data[index] > 0.0 ? current->backward_grad[index] : 0.0;
+            }
+        };
+    }
+
+    return output;
+}
+
+Tensor Tensor::leakyRelu(double negative_slope) const {
+    if (negative_slope < 0.0) {
+        throw std::invalid_argument("LeakyReLU negative slope must be nonnegative.");
+    }
+
+    std::vector<double> result;
+    result.reserve(size());
+
+    for (double value : node_->data) {
+        result.push_back(value > 0.0 ? value : value * negative_slope);
+    }
+
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent, negative_slope] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t index = 0; index < current->backward_grad.size(); ++index) {
+                const double slope = parent->data[index] > 0.0 ? 1.0 : negative_slope;
+                parent->backward_grad[index] += current->backward_grad[index] * slope;
             }
         };
     }
@@ -546,6 +690,67 @@ Tensor Tensor::tanh() const {
             for (size_t index = 0; index < current->backward_grad.size(); ++index) {
                 const double output_value = current->data[index];
                 parent->backward_grad[index] += current->backward_grad[index] * (1.0 - output_value * output_value);
+            }
+        };
+    }
+
+    return output;
+}
+
+Tensor Tensor::softmaxRows() const {
+    if (rank() != 2) {
+        throw std::invalid_argument("SoftmaxRows requires rank 2 tensor.");
+    }
+
+    const size_t rows = shape().rows();
+    const size_t cols = shape().cols();
+    std::vector<double> result(size(), 0.0);
+
+    for (size_t row = 0; row < rows; ++row) {
+        double row_max = at(row, 0);
+
+        for (size_t col = 1; col < cols; ++col) {
+            row_max = std::max(row_max, at(row, col));
+        }
+
+        double denominator = 0.0;
+
+        for (size_t col = 0; col < cols; ++col) {
+            const double value = std::exp(at(row, col) - row_max);
+            result[row * cols + col] = value;
+            denominator += value;
+        }
+
+        for (size_t col = 0; col < cols; ++col) {
+            result[row * cols + col] /= denominator;
+        }
+    }
+
+    Tensor output(std::move(result), node_->shape, requiresGrad());
+
+    if (requiresGrad()) {
+        auto parent = node_;
+        auto output_node = output.node_;
+        std::weak_ptr<Node> weak_output = output_node;
+        output_node->parents = {parent};
+        output_node->backward = [weak_output, parent, rows, cols] {
+            auto current = weak_output.lock();
+            if (!current) {
+                return;
+            }
+
+            for (size_t row = 0; row < rows; ++row) {
+                double weighted_gradient = 0.0;
+
+                for (size_t col = 0; col < cols; ++col) {
+                    const size_t index = row * cols + col;
+                    weighted_gradient += current->backward_grad[index] * current->data[index];
+                }
+
+                for (size_t col = 0; col < cols; ++col) {
+                    const size_t index = row * cols + col;
+                    parent->backward_grad[index] += current->data[index] * (current->backward_grad[index] - weighted_gradient);
+                }
             }
         };
     }

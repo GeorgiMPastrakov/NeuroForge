@@ -109,6 +109,20 @@ int main() {
     assert(scaled.at(0, 0) == 2.0);
     assert(scaled.at(1, 1) == 8.0);
 
+    Tensor absolute = Tensor::fromVector({-2.0, 0.0, 3.0}).abs();
+    assert(absolute.at(0) == 2.0);
+    assert(absolute.at(1) == 0.0);
+    assert(absolute.at(2) == 3.0);
+
+    Tensor logged = Tensor::fromVector({1.0, std::exp(1.0)}).log();
+    assert(near(logged.at(0), 0.0));
+    assert(near(logged.at(1), 1.0));
+
+    Tensor clamped = Tensor::fromVector({-1.0, 0.5, 2.0}).clamp(0.0, 1.0);
+    assert(clamped.at(0) == 0.0);
+    assert(clamped.at(1) == 0.5);
+    assert(clamped.at(2) == 1.0);
+
     Tensor transposed = Tensor::fromVector({
         {1.0, 2.0, 3.0},
         {4.0, 5.0, 6.0}
@@ -167,6 +181,11 @@ int main() {
     assert(relu.at(1) == 0.0);
     assert(relu.at(2) == 1.0);
 
+    Tensor leaky_relu = activation_input.leakyRelu(0.1);
+    assert(near(leaky_relu.at(0), -0.1));
+    assert(near(leaky_relu.at(1), 0.0));
+    assert(near(leaky_relu.at(2), 1.0));
+
     Tensor sigmoid = activation_input.sigmoid();
     assert(near(sigmoid.at(0), 1.0 / (1.0 + std::exp(1.0))));
     assert(near(sigmoid.at(1), 0.5));
@@ -176,6 +195,20 @@ int main() {
     assert(near(tanh.at(0), std::tanh(-1.0)));
     assert(near(tanh.at(1), 0.0));
     assert(near(tanh.at(2), std::tanh(1.0)));
+
+    Tensor softmax = Tensor::fromVector({
+        {1.0, 2.0},
+        {3.0, 3.0}
+    }).softmaxRows();
+    assert(softmax.shape() == Shape({2, 2}));
+    assert(near(softmax.at(0, 0) + softmax.at(0, 1), 1.0));
+    assert(near(softmax.at(1, 0), 0.5));
+    assert(near(softmax.at(1, 1), 0.5));
+
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({0.0}).log(); });
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).clamp(2.0, 1.0); });
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).leakyRelu(-0.1); });
+    expectThrows<std::invalid_argument>([] { Tensor::fromVector({1.0}).softmaxRows(); });
 
     Random::seed(42);
     Tensor random_a = Random::uniform(Shape({2, 2}), -1.0, 1.0);
