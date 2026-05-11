@@ -34,17 +34,46 @@ NeuroForge is complete for the current educational roadmap when:
 
 ## Future Work
 
-Future work should happen only after the current project is stable:
+Future work should happen only after the current project is stable.
+
+## Phase 9: Expanded Model Features
 
 - Adam optimizer
 - binary cross entropy
-- broader Tensor operations
-- limited broadcasting
-- gradient checking utilities
+- MAE loss
+- MomentumSGD
+- LeakyReLU
+- Softmax and CrossEntropyLoss for dense classifiers
 - DataLoader integration in `Trainer`
+- train/eval mode
+- Dropout
+- BatchNorm1d
+- one deterministic dense classification example
+
+Phase 9 should stay focused on dense neural networks. CNNs are not included.
+
+## Phase 10: General Visual Lab
+
+- load supported saved `Sequential` models
+- load numeric CSV datasets
+- train supported dense models from the GUI
+- generalize all views around a session state
+- render dense network architecture as a real neuron graph with connections
+- summarize large layers instead of drawing unreadable edge clouds
+- keep the core framework independent from GUI dependencies
+
+## Later Major Work
+
+- N-D `Shape` and `Tensor`
+- reshape and flatten
+- convolution layers
+- pooling layers
+- convolution autograd
+- image datasets
+- CNN examples
+- gradient checking utilities
 - model checkpoint format with optimizer state
 - Graphviz export
-- richer Visual Lab controls
 - more examples
 
 ## Out Of Scope
