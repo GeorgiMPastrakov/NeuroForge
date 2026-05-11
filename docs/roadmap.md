@@ -25,6 +25,9 @@
 - LeakyReLU, Softmax, and Dropout
 - DataLoader-aware Trainer overloads
 - dense classification example
+- generalized Visual Lab session loading and training
+- visual dense network graph
+- Visual Lab support for binary, regression, and multiclass snapshots
 
 ## Current Completion Target
 
@@ -42,6 +45,8 @@ NeuroForge is complete for the current educational roadmap when:
 Future work should happen only after the current project is stable.
 
 ## Phase 10: General Visual Lab
+
+Completed:
 
 - load supported saved `Sequential` models
 - load numeric CSV datasets

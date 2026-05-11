@@ -27,7 +27,8 @@ This release completes the current NeuroForge roadmap.
 - XOR demo
 - CSV regression demo
 - dense classification demo
-- optional Visual Lab
+- optional generalized Visual Lab
+- visual dense network graph
 - planning and final documentation
 
 ## Validation
@@ -55,14 +56,17 @@ cmake --build build-visual
 - no CUDA
 - no external ML backend
 - no arbitrary custom model serialization
-- no serialization support yet for LeakyReLU, Softmax, or Dropout
 - no optimizer checkpointing
-- Visual Lab is a demo inspector, not a full experiment manager
+- Visual Lab supports dense `Sequential` models only
+- Visual Lab scatter and decision-boundary views require 2D features
+- no CNNs
+- no arbitrary custom module visualization
 
 ## Stretch Goals
 
 - gradient checker
 - broader Tensor operation coverage
-- richer Visual Lab controls
+- asynchronous Visual Lab training
+- native file dialogs
 - Graphviz export
 - more demos
