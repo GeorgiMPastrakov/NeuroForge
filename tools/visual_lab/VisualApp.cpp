@@ -167,6 +167,7 @@ void VisualApp::drawControls() {
     ImGui::TextUnformatted(session_.status().c_str());
 
     ImGui::Separator();
+    ImGui::SetNextItemWidth(520.0f);
     ImGui::InputText("Model path", model_path_.data(), model_path_.size());
     ImGui::SameLine();
     if (ImGui::Button("Load Model")) {
@@ -174,10 +175,13 @@ void VisualApp::drawControls() {
         refreshSnapshots();
     }
 
+    ImGui::SetNextItemWidth(520.0f);
     ImGui::InputText("CSV path", csv_path_.data(), csv_path_.size());
-    ImGui::InputInt("Label column", &label_column_);
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::InputInt("Label column", &label_column_, 0, 0);
     ImGui::Checkbox("Has header", &has_header_);
-    ImGui::InputInt("Class count", &class_count_);
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::InputInt("Class count", &class_count_, 0, 0);
     ImGui::SameLine();
     if (ImGui::Button("Load Dataset")) {
         session_.loadCsvDataset(csv_path_.data(), static_cast<size_t>(std::max(label_column_, 0)), has_header_);
@@ -185,14 +189,20 @@ void VisualApp::drawControls() {
     }
 
     ImGui::Separator();
-    ImGui::InputInt("Epochs", &epochs_);
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::InputInt("Epochs", &epochs_, 0, 0);
+    ImGui::SetNextItemWidth(120.0f);
     ImGui::InputFloat("Learning rate", &learning_rate_);
-    ImGui::InputInt("Batch size", &batch_size_);
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::InputInt("Batch size", &batch_size_, 0, 0);
     ImGui::Checkbox("Shuffle", &shuffle_);
-    ImGui::InputInt("Seed", &seed_);
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::InputInt("Seed", &seed_, 0, 0);
     const char* losses[] = {"MSE", "BinaryCrossEntropy", "CrossEntropy"};
     const char* optimizers[] = {"SGD", "Adam"};
+    ImGui::SetNextItemWidth(220.0f);
     ImGui::Combo("Loss", &loss_index_, losses, 3);
+    ImGui::SetNextItemWidth(220.0f);
     ImGui::Combo("Optimizer", &optimizer_index_, optimizers, 2);
 
     if (ImGui::Button("Train")) {
