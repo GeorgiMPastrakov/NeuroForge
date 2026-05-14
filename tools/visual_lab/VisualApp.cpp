@@ -14,6 +14,8 @@
 #include <GLFW/glfw3.h>
 
 #include <algorithm>
+#include <array>
+#include <cstdio>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -31,6 +33,12 @@ std::pair<double, double> paddedRange(double min_value, double max_value) {
 
     const double padding = (max_value - min_value) * 0.15;
     return {min_value - padding, max_value + padding};
+}
+
+template <size_t Size>
+void copyText(std::array<char, Size>& target, const char* value) {
+    target.fill('\0');
+    std::snprintf(target.data(), target.size(), "%s", value);
 }
 
 }
@@ -158,57 +166,77 @@ void VisualApp::refreshSnapshots() {
 }
 
 void VisualApp::drawControls() {
+    if (!ImGui::BeginTable("session_controls", 3, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) {
+        return;
+    }
+
+    ImGui::TableSetupColumn("Session", ImGuiTableColumnFlags_WidthStretch, 0.8f);
+    ImGui::TableSetupColumn("Load", ImGuiTableColumnFlags_WidthStretch, 1.6f);
+    ImGui::TableSetupColumn("Train", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::TextUnformatted("Session");
+
     if (ImGui::Button("Reset XOR Demo")) {
         session_.resetXorDemo();
         refreshSnapshots();
     }
 
-    ImGui::SameLine();
-    ImGui::TextUnformatted(session_.status().c_str());
+    ImGui::TextWrapped("%s", session_.status().c_str());
 
-    ImGui::Separator();
-    ImGui::SetNextItemWidth(520.0f);
-    ImGui::InputText("Model path", model_path_.data(), model_path_.size());
+    ImGui::TableSetColumnIndex(1);
+    ImGui::TextUnformatted("Load model and dataset");
+    ImGui::TextDisabled("Model path accepts ModelSaver text files.");
+    ImGui::SetNextItemWidth(-120.0f);
+    ImGui::InputTextWithHint("##model_path", "build/neuroforge_linear_regression_model.txt", model_path_.data(), model_path_.size());
     ImGui::SameLine();
-    if (ImGui::Button("Load Model")) {
+    if (ImGui::Button("Load Model##load_model")) {
         session_.loadModel(model_path_.data());
         refreshSnapshots();
     }
+    if (ImGui::Button("Use regression model path")) {
+        copyText(model_path_, "build/neuroforge_linear_regression_model.txt");
+    }
 
-    ImGui::SetNextItemWidth(520.0f);
-    ImGui::InputText("CSV path", csv_path_.data(), csv_path_.size());
-    ImGui::SetNextItemWidth(120.0f);
-    ImGui::InputInt("Label column", &label_column_, 0, 0);
-    ImGui::Checkbox("Has header", &has_header_);
-    ImGui::SetNextItemWidth(120.0f);
-    ImGui::InputInt("Class count", &class_count_, 0, 0);
+    ImGui::SetNextItemWidth(-120.0f);
+    ImGui::InputTextWithHint("##csv_path", "path/to/data.csv", csv_path_.data(), csv_path_.size());
     ImGui::SameLine();
-    if (ImGui::Button("Load Dataset")) {
+    if (ImGui::Button("Load Dataset##load_dataset")) {
         session_.loadCsvDataset(csv_path_.data(), static_cast<size_t>(std::max(label_column_, 0)), has_header_);
         refreshSnapshots();
     }
+    ImGui::SetNextItemWidth(90.0f);
+    ImGui::InputInt("Label column", &label_column_, 0, 0);
+    ImGui::SameLine();
+    ImGui::Checkbox("Has header", &has_header_);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::InputInt("Class count", &class_count_, 0, 0);
 
-    ImGui::Separator();
-    ImGui::SetNextItemWidth(120.0f);
+    ImGui::TableSetColumnIndex(2);
+    ImGui::TextUnformatted("Train current session");
+    ImGui::SetNextItemWidth(100.0f);
     ImGui::InputInt("Epochs", &epochs_, 0, 0);
-    ImGui::SetNextItemWidth(120.0f);
+    ImGui::SetNextItemWidth(100.0f);
     ImGui::InputFloat("Learning rate", &learning_rate_);
-    ImGui::SetNextItemWidth(120.0f);
+    ImGui::SetNextItemWidth(100.0f);
     ImGui::InputInt("Batch size", &batch_size_, 0, 0);
-    ImGui::Checkbox("Shuffle", &shuffle_);
-    ImGui::SetNextItemWidth(120.0f);
+    ImGui::SetNextItemWidth(100.0f);
     ImGui::InputInt("Seed", &seed_, 0, 0);
+    ImGui::Checkbox("Shuffle", &shuffle_);
     const char* losses[] = {"MSE", "BinaryCrossEntropy", "CrossEntropy"};
     const char* optimizers[] = {"SGD", "Adam"};
-    ImGui::SetNextItemWidth(220.0f);
+    ImGui::SetNextItemWidth(190.0f);
     ImGui::Combo("Loss", &loss_index_, losses, 3);
-    ImGui::SetNextItemWidth(220.0f);
+    ImGui::SetNextItemWidth(190.0f);
     ImGui::Combo("Optimizer", &optimizer_index_, optimizers, 2);
 
     if (ImGui::Button("Train")) {
         session_.trainCurrent(trainingConfig());
         refreshSnapshots();
     }
+
+    ImGui::EndTable();
 }
 
 void VisualApp::drawPredictionView() const {
@@ -269,26 +297,53 @@ void VisualApp::drawFrame() {
     drawControls();
 
     ImGui::Separator();
-    ImGui::Columns(3, "dashboard_columns", true);
-    visual_lab::drawModelGraphView(network_graph_, model_snapshot_);
-    ImGui::NextColumn();
-    visual_lab::drawLossPlotView(loss_snapshot_);
-    ImGui::NextColumn();
-    drawPredictionView();
-    ImGui::Columns(1);
+    if (ImGui::BeginTable("overview_grid", 3, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Architecture", ImGuiTableColumnFlags_WidthStretch, 1.25f);
+        ImGui::TableSetupColumn("Loss", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+        ImGui::TableSetupColumn("Predictions", ImGuiTableColumnFlags_WidthStretch, 1.0f);
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::BeginChild("architecture_panel", ImVec2(0.0f, 360.0f), true);
+        visual_lab::drawModelGraphView(network_graph_, model_snapshot_);
+        ImGui::EndChild();
+        ImGui::TableSetColumnIndex(1);
+        ImGui::BeginChild("loss_panel", ImVec2(0.0f, 360.0f), true);
+        visual_lab::drawLossPlotView(loss_snapshot_);
+        ImGui::EndChild();
+        ImGui::TableSetColumnIndex(2);
+        ImGui::BeginChild("prediction_panel", ImVec2(0.0f, 360.0f), true);
+        drawPredictionView();
+        ImGui::EndChild();
+        ImGui::EndTable();
+    }
 
     ImGui::Separator();
-    ImGui::Columns(2, "dataset_columns", true);
-    visual_lab::drawDatasetScatterView(dataset_snapshot_);
-    ImGui::NextColumn();
-    visual_lab::drawDecisionBoundaryView(decision_grid_);
-    ImGui::Columns(1);
+    if (ImGui::BeginTable("data_grid", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchSame)) {
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::BeginChild("dataset_panel", ImVec2(0.0f, 300.0f), true);
+        visual_lab::drawDatasetScatterView(dataset_snapshot_);
+        ImGui::EndChild();
+        ImGui::TableSetColumnIndex(1);
+        ImGui::BeginChild("decision_panel", ImVec2(0.0f, 300.0f), true);
+        visual_lab::drawDecisionBoundaryView(decision_grid_);
+        ImGui::EndChild();
+        ImGui::EndTable();
+    }
 
     ImGui::Separator();
-    ImGui::Columns(2, "inspection_columns", true);
-    visual_lab::drawTensorInspectorView(tensor_snapshots_);
-    ImGui::NextColumn();
-    visual_lab::drawGradientView(gradient_snapshots_);
-    ImGui::Columns(1);
+    if (ImGui::BeginTable("inspection_grid", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchSame)) {
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::BeginChild("tensor_panel", ImVec2(0.0f, 260.0f), true);
+        visual_lab::drawTensorInspectorView(tensor_snapshots_);
+        ImGui::EndChild();
+        ImGui::TableSetColumnIndex(1);
+        ImGui::BeginChild("gradient_panel", ImVec2(0.0f, 260.0f), true);
+        visual_lab::drawGradientView(gradient_snapshots_);
+        ImGui::EndChild();
+        ImGui::EndTable();
+    }
+
     ImGui::End();
 }
