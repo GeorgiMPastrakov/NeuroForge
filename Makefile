@@ -11,6 +11,7 @@ examples: build
 	./build/examples/neuroforge_xor
 	./build/examples/neuroforge_linear_regression
 	./build/examples/neuroforge_dense_classification
+	./build/examples/neuroforge_population_regression
 
 visual:
 	cmake -S . -B build-visual -DNEUROFORGE_BUILD_VISUALIZER=ON

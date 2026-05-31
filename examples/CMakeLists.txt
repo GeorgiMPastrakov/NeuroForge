@@ -9,3 +9,7 @@ target_link_libraries(neuroforge_linear_regression PRIVATE neuroforge)
 add_executable(neuroforge_dense_classification dense_classification.cpp)
 
 target_link_libraries(neuroforge_dense_classification PRIVATE neuroforge)
+
+add_executable(neuroforge_population_regression population_regression.cpp)
+
+target_link_libraries(neuroforge_population_regression PRIVATE neuroforge)

@@ -1,6 +1,6 @@
 # Examples
 
-NeuroForge includes three command-line examples and one optional GUI demo.
+NeuroForge includes four command-line examples and one optional GUI demo.
 
 ## XOR
 
@@ -71,6 +71,26 @@ The dense classification demo uses:
 - `DataLoader`
 
 It prints initial loss, final loss, accuracy, and class predictions.
+
+## Population Forecasting
+
+Run:
+
+```bash
+./build/examples/neuroforge_population_regression
+```
+
+The population-regression demo uses:
+
+- `CSVDataset`
+- scaled years relative to 2015
+- population values in millions
+- `Linear`
+- `MSELoss`
+- `SGD`
+- `Trainer`
+
+It trains `Linear(1 -> 1)` and prints an estimated population for 2025. The expected estimate is approximately `154400`.
 
 ## Visual Lab
 

@@ -16,7 +16,7 @@ The goal is not to replace a production ML library. The goal is to make the inte
 | Tensor scope | Rank-1 and rank-2 tensors |
 | Dependencies | Core framework has no external ML dependency |
 | Tests | 12 deterministic test executables |
-| Demos | XOR, CSV linear regression, dense classification |
+| Demos | XOR, CSV linear regression, dense classification, population forecasting |
 | Optional desktop UI | Dear ImGui + ImPlot + GLFW Visual Lab |
 
 ```mermaid
@@ -201,6 +201,20 @@ Expected result:
 Accuracy: 1
 ```
 
+### Population Forecasting
+
+The population-regression demo trains a custom `Linear(1 -> 1)` model from a numeric CSV dataset. Years are scaled relative to 2015 and population values are stored in millions so SGD stays stable.
+
+```bash
+./build/examples/neuroforge_population_regression
+```
+
+Expected result:
+
+```text
+Predicted population for 2025: approximately 154400
+```
+
 ## Visual Lab
 
 NeuroForge Visual Lab is an optional desktop XOR explainer. It is separate from the core framework, so normal builds do not fetch or require GUI dependencies.
@@ -350,7 +364,7 @@ NeuroForge is complete for its current educational scope:
 
 - core framework builds cleanly
 - automated tests pass
-- three demos run successfully
+- four demos run successfully
 - model save/load works for supported layers
 - Visual Lab presents a real trained XOR network
 

@@ -26,6 +26,7 @@ Run examples:
 ./build/examples/neuroforge_xor
 ./build/examples/neuroforge_linear_regression
 ./build/examples/neuroforge_dense_classification
+./build/examples/neuroforge_population_regression
 ```
 
 Build the optional visualizer:
@@ -61,6 +62,7 @@ Expected release state:
 - all tests pass
 - examples run
 - dense classification reaches perfect accuracy on its deterministic demo dataset
+- population regression estimates approximately `154400` people for 2025
 - regression demo saves `build/neuroforge_linear_regression_model.txt`
 - optional visualizer builds
 - Visual Lab opens as a display-only XOR dashboard

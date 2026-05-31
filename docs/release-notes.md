@@ -27,6 +27,7 @@ This release completes the current NeuroForge roadmap.
 - XOR demo
 - CSV regression demo
 - dense classification demo
+- population forecasting demo
 - optional focused XOR Visual Lab
 - visual dense network graph
 - planning and final documentation
@@ -44,6 +45,7 @@ ctest --test-dir build
 ./build/examples/neuroforge_xor
 ./build/examples/neuroforge_linear_regression
 ./build/examples/neuroforge_dense_classification
+./build/examples/neuroforge_population_regression
 cmake -S . -B build-visual -DNEUROFORGE_BUILD_VISUALIZER=ON
 cmake --build build-visual
 ```
