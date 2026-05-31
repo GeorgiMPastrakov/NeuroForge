@@ -17,7 +17,7 @@ The goal is to show how a CPU-only ML framework works internally.
 | Metrics | MSE, MAE, accuracy, binary accuracy |
 | Serialization | save/load for supported `Sequential` models |
 | Examples | XOR classifier, CSV regression, dense classification |
-| Visualization | optional NeuroForge Visual Lab with model loading, CSV loading, training controls, visual dense graph, loss, tensor, gradient, dataset, prediction, and decision boundary views |
+| Visualization | optional NeuroForge Visual Lab with a focused XOR demo, visual network graph, loss curve, decision map, and prediction table |
 
 ## Build And Test
 
@@ -125,9 +125,7 @@ cmake --build build-visual
 
 The default framework build does not require GUI dependencies. Visual Lab fetches Dear ImGui, ImPlot, and GLFW only when enabled.
 
-Visual Lab starts with an XOR session and can load supported saved `Sequential` models plus numeric CSV datasets through text path inputs. Supported loaded layers are `Linear`, `ReLU`, `Sigmoid`, `Tanh`, `LeakyReLU`, `Softmax`, and `Dropout`.
-
-GUI training supports MSE, BinaryCrossEntropy, CrossEntropy, SGD, and Adam. Scatter and decision-boundary views require 2D features.
+Visual Lab is a display-only XOR explainer. It automatically trains a deterministic `Linear(2 -> 4) -> ReLU -> Linear(4 -> 1) -> Sigmoid` model and shows the neuron graph, loss convergence, decision regions, and truth-table predictions.
 
 ## Documentation
 
@@ -167,5 +165,5 @@ NeuroForge is not:
 - Broadcasting is intentionally limited.
 - Autograd supports only the implemented operation set.
 - Serialization supports the current `Sequential` layer set only.
-- Visual Lab supports dense `Sequential` models, not arbitrary custom modules.
+- Visual Lab intentionally presents one deterministic XOR model.
 - CNNs are not supported.

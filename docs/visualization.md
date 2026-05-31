@@ -1,6 +1,6 @@
 # NeuroForge Visual Lab
 
-NeuroForge Visual Lab is an optional desktop GUI for inspecting and training supported NeuroForge models.
+NeuroForge Visual Lab is an optional desktop GUI for explaining one trained XOR classifier.
 
 The core library builds without GUI dependencies.
 
@@ -27,68 +27,35 @@ These dependencies are fetched only when `NEUROFORGE_BUILD_VISUALIZER=ON`.
 
 Current views:
 
-- visual dense network graph
-- training loss plot
-- tensor inspector
-- gradient monitor
-- dataset scatter plot
-- decision boundary view
-- prediction table
+- visual XOR network graph
+- training loss curve
+- combined XOR decision map and truth-table samples
+- compact prediction table
 
-The architecture view draws dense `Sequential` networks as neurons and weighted connections. Large layers are summarized so the view stays readable.
+The architecture view draws the `2 -> 4 -> 1` network as neurons and weighted connections. Green edges are positive weights, red edges are negative weights, and thicker edges have larger magnitudes.
 
 ## Data Flow
 
 The GUI reads real data through `VisualSession`:
 
-- active `Sequential`
-- optional numeric `Dataset`
+- deterministic XOR `Sequential`
+- XOR `Dataset`
 - `TrainingHistory`
 - model predictions
-- tensor and gradient snapshots
+- visualization snapshots
 
 Non-GUI snapshot builders live in the framework so they can be tested without opening a window.
 
-## Loading
+## Demo
 
-Visual Lab supports text-path loading for:
+Visual Lab automatically builds and trains:
 
-- saved `Sequential` models
-- numeric CSV datasets
+```text
+Linear(2 -> 4) -> ReLU -> Linear(4 -> 1) -> Sigmoid
+```
 
-Supported loaded layers are:
-
-- `Linear`
-- `ReLU`
-- `Sigmoid`
-- `Tanh`
-- `LeakyReLU`
-- `Softmax`
-- `Dropout`
-
-CSV loading uses the existing `CSVDataset` rules. Values must be numeric. The label column is selected in the GUI.
-
-## Training
-
-GUI training is synchronous and uses the manual `Trainer::fit` path.
-
-Supported GUI losses:
-
-- MSE
-- BinaryCrossEntropy
-- CrossEntropy
-
-Supported GUI optimizers:
-
-- SGD
-- Adam
-
-For CrossEntropy, scalar CSV labels are converted from integer class indices to one-hot rows using the GUI class-count setting.
+The dashboard is display-only. It does not expose model loading, CSV loading, or training controls.
 
 ## Limits
 
-Supported model type is `Sequential` dense models only.
-
-Scatter and decision-boundary views require 2D features. Non-2D datasets load, but those views show an unsupported-state message.
-
-Visual Lab does not support CNNs, N-D tensors, arbitrary custom modules, native file dialogs, asynchronous training, or optimizer checkpoint loading.
+The GUI intentionally presents one XOR classifier for a clear class demonstration. The framework still contains reusable snapshot builders and session APIs, but the desktop app does not expose generic experiment management.

@@ -82,12 +82,4 @@ cmake --build build-visual
 ./build-visual/tools/visual_lab/neuroforge_visual_lab
 ```
 
-The visualizer starts with a deterministic XOR session. It can also load supported saved `Sequential` models and numeric CSV datasets through text path inputs.
-
-Supported Visual Lab training options:
-
-- losses: MSE, BinaryCrossEntropy, CrossEntropy
-- optimizers: SGD, Adam
-- CrossEntropy scalar CSV labels converted to one-hot labels by class count
-
-Scatter and decision-boundary views require 2D features. Supported loaded layers are `Linear`, `ReLU`, `Sigmoid`, `Tanh`, `LeakyReLU`, `Softmax`, and `Dropout`.
+The display-only visualizer automatically trains and presents a deterministic XOR model. It shows a neuron graph, MSE convergence curve, combined decision map with truth-table points, and compact prediction table.

@@ -1,5 +1,6 @@
 #include "neuroforge/visualization/VisualSession.hpp"
 
+#include "neuroforge/core/Random.hpp"
 #include "neuroforge/data/CSVDataset.hpp"
 #include "neuroforge/data/DataLoader.hpp"
 #include "neuroforge/losses/BinaryCrossEntropyLoss.hpp"
@@ -28,6 +29,7 @@ VisualSession::VisualSession() {
 
 bool VisualSession::resetXorDemo() {
     try {
+        Random::seed(42);
         Sequential model;
         model.add(std::make_shared<Linear>(2, 4));
         model.add(std::make_shared<ReLU>());

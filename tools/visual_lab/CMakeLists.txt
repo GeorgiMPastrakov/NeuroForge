@@ -53,10 +53,7 @@ add_executable(neuroforge_visual_lab
     VisualApp.cpp
     ModelGraphView.cpp
     LossPlotView.cpp
-    GradientView.cpp
-    TensorInspectorView.cpp
-    DatasetScatterView.cpp
-    DecisionBoundaryView.cpp
+    XorDecisionView.cpp
 )
 
 target_link_libraries(neuroforge_visual_lab PRIVATE neuroforge neuroforge_imgui)

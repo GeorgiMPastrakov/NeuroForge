@@ -27,7 +27,7 @@ This release completes the current NeuroForge roadmap.
 - XOR demo
 - CSV regression demo
 - dense classification demo
-- optional generalized Visual Lab
+- optional focused XOR Visual Lab
 - visual dense network graph
 - planning and final documentation
 
@@ -57,8 +57,7 @@ cmake --build build-visual
 - no external ML backend
 - no arbitrary custom model serialization
 - no optimizer checkpointing
-- Visual Lab supports dense `Sequential` models only
-- Visual Lab scatter and decision-boundary views require 2D features
+- Visual Lab desktop UI intentionally presents one deterministic XOR model
 - no CNNs
 - no arbitrary custom module visualization
 
