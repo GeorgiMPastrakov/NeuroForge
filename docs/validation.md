@@ -1,5 +1,17 @@
 # Validation
 
+Run the complete automated validation:
+
+```bash
+make validate
+```
+
+Remove generated build output:
+
+```bash
+make clean
+```
+
 Run the default build and tests:
 
 ```bash
@@ -28,6 +40,15 @@ Run the optional visualizer:
 ```bash
 ./build-visual/tools/visual_lab/neuroforge_visual_lab
 ```
+
+Manual Visual Lab check:
+
+- header shows `XOR Classification Demo`
+- graph shows `2 -> 4 -> 1` neurons and weighted connections
+- loss curve converges
+- decision map overlays four XOR truth-table samples
+- prediction table classifies `0, 1, 1, 0`
+- dashboard fits without scrolling or ImGui warnings
 
 Check for C++ and CMake comments:
 

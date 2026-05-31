@@ -36,6 +36,3 @@
 #include "neuroforge/training/TrainingHistory.hpp"
 #include "neuroforge/visualization/VisualSession.hpp"
 #include "neuroforge/visualization/VisualizationData.hpp"
-
-namespace neuroforge {
-}

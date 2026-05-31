@@ -51,7 +51,7 @@ Non-GUI snapshot builders live in the framework so they can be tested without op
 Visual Lab automatically builds and trains:
 
 ```text
-Linear(2 -> 4) -> ReLU -> Linear(4 -> 1) -> Sigmoid
+Linear(2 -> 4) -> Sigmoid -> Linear(4 -> 1) -> Sigmoid
 ```
 
 The dashboard is display-only. It does not expose model loading, CSV loading, or training controls.

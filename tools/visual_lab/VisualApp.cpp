@@ -163,7 +163,7 @@ void VisualApp::drawHeader() const {
         ImGui::TextUnformatted("2 inputs -> 4 hidden -> 1 output");
         ImGui::TableSetColumnIndex(1);
         ImGui::TextDisabled("Layers");
-        ImGui::TextUnformatted("Linear -> ReLU -> Linear -> Sigmoid");
+        ImGui::TextUnformatted("Linear -> Sigmoid -> Linear -> Sigmoid");
         ImGui::TableSetColumnIndex(2);
         ImGui::TextDisabled("Training");
         ImGui::Text("%zu epochs, MSE + SGD", loss_snapshot_.epochs.size());

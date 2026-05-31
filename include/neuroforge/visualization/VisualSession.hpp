@@ -49,8 +49,6 @@ public:
     const std::optional<Dataset>& dataset() const;
     const TrainingHistory& history() const;
     const std::optional<Tensor>& predictions() const;
-    const std::string& modelPath() const;
-    const std::string& datasetPath() const;
     const std::string& status() const;
     bool hasModel() const;
     bool hasDataset() const;
@@ -60,8 +58,6 @@ private:
     std::optional<Dataset> dataset_;
     TrainingHistory history_;
     std::optional<Tensor> predictions_;
-    std::string model_path_;
-    std::string dataset_path_;
     std::string status_;
 
     Dataset trainingDatasetFor(const VisualTrainingConfig& config) const;

@@ -65,7 +65,5 @@ cmake --build build-visual
 
 - gradient checker
 - broader Tensor operation coverage
-- asynchronous Visual Lab training
-- native file dialogs
 - Graphviz export
 - more demos

@@ -8,7 +8,6 @@
 #include "neuroforge/losses/LossFunction.hpp"
 #include "neuroforge/losses/MSELoss.hpp"
 #include "neuroforge/nn/Linear.hpp"
-#include "neuroforge/nn/ReLU.hpp"
 #include "neuroforge/nn/Sigmoid.hpp"
 #include "neuroforge/optim/Adam.hpp"
 #include "neuroforge/optim/Optimizer.hpp"
@@ -32,7 +31,7 @@ bool VisualSession::resetXorDemo() {
         Random::seed(42);
         Sequential model;
         model.add(std::make_shared<Linear>(2, 4));
-        model.add(std::make_shared<ReLU>());
+        model.add(std::make_shared<Sigmoid>());
         model.add(std::make_shared<Linear>(4, 1));
         model.add(std::make_shared<Sigmoid>());
 
@@ -52,17 +51,15 @@ bool VisualSession::resetXorDemo() {
         );
 
         MSELoss loss;
-        SGD optimizer(model.parameters(), 0.5);
+        SGD optimizer(model.parameters(), 1.0);
         Trainer trainer(model, loss, optimizer);
         TrainingConfig config;
-        config.epochs = 2000;
+        config.epochs = 3000;
         config.verbose = false;
 
         history_ = trainer.fit(dataset.features(), dataset.labels(), config);
         model_ = std::move(model);
         dataset_ = std::move(dataset);
-        model_path_.clear();
-        dataset_path_ = "xor demo";
         status_ = "Loaded XOR demo.";
         refreshPredictions();
         return true;
@@ -75,7 +72,6 @@ bool VisualSession::resetXorDemo() {
 bool VisualSession::loadModel(const std::string& path) {
     try {
         model_ = ModelLoader::load(path);
-        model_path_ = path;
         status_ = "Loaded model: " + path;
         refreshPredictions();
         return true;
@@ -88,7 +84,6 @@ bool VisualSession::loadModel(const std::string& path) {
 bool VisualSession::loadCsvDataset(const std::string& path, size_t label_column, bool has_header) {
     try {
         dataset_ = CSVDataset(path, label_column, has_header);
-        dataset_path_ = path;
         status_ = "Loaded dataset: " + path;
         refreshPredictions();
         return true;
@@ -185,14 +180,6 @@ const TrainingHistory& VisualSession::history() const {
 
 const std::optional<Tensor>& VisualSession::predictions() const {
     return predictions_;
-}
-
-const std::string& VisualSession::modelPath() const {
-    return model_path_;
-}
-
-const std::string& VisualSession::datasetPath() const {
-    return dataset_path_;
 }
 
 const std::string& VisualSession::status() const {

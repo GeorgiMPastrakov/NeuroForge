@@ -184,8 +184,30 @@ int main() {
     VisualSession session;
     assert(session.hasModel());
     assert(session.hasDataset());
+    assert(session.history().size() == 3000);
+    assert(session.history().finalLoss() < 0.01);
     assert(session.predictions().has_value());
     assert(session.predictions()->shape() == Shape({4, 1}));
+    const std::vector<size_t> expected_classes = {0, 1, 1, 0};
+
+    for (size_t row = 0; row < expected_classes.size(); ++row) {
+        const size_t predicted_class = session.predictions()->at(row, 0) >= 0.5 ? 1 : 0;
+        assert(predicted_class == expected_classes[row]);
+    }
+
+    ModelSnapshot xor_model_snapshot = buildModelSnapshot(session.model());
+    assert(xor_model_snapshot.layers.size() == 4);
+    assert(xor_model_snapshot.total_parameters == 17);
+    NetworkGraphSnapshot xor_graph = buildNetworkGraphSnapshot(session.model(), 12);
+    assert(xor_graph.supported);
+    assert(xor_graph.nodes.size() == 7);
+    assert(xor_graph.edges.size() == 12);
+    DatasetSnapshot xor_dataset_snapshot = buildDatasetSnapshot(session.dataset().value());
+    assert(xor_dataset_snapshot.supported);
+    assert(xor_dataset_snapshot.points.size() == 4);
+    DecisionBoundaryGrid xor_grid = buildDecisionBoundaryGrid(session.model(), session.dataset().value(), -0.25, 1.25, -0.25, 1.25, 12, 12);
+    assert(xor_grid.supported);
+    assert(xor_grid.classes.size() == 144);
     assert(!session.status().empty());
     assert(!session.loadModel("missing_visual_session_model.txt"));
     assert(session.status().find("Error:") == 0);

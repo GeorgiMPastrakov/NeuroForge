@@ -1,2 +1,4 @@
 build/
+build-visual/
+imgui.ini
 .DS_Store

@@ -125,7 +125,7 @@ cmake --build build-visual
 
 The default framework build does not require GUI dependencies. Visual Lab fetches Dear ImGui, ImPlot, and GLFW only when enabled.
 
-Visual Lab is a display-only XOR explainer. It automatically trains a deterministic `Linear(2 -> 4) -> ReLU -> Linear(4 -> 1) -> Sigmoid` model and shows the neuron graph, loss convergence, decision regions, and truth-table predictions.
+Visual Lab is a display-only XOR explainer. It automatically trains a deterministic `Linear(2 -> 4) -> Sigmoid -> Linear(4 -> 1) -> Sigmoid` model and shows the neuron graph, loss convergence, decision regions, and truth-table predictions.
 
 ## Documentation
 
